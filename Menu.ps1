@@ -4,8 +4,9 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
     Exit} 
 # Variables:
-# Start Menu
+# Designated Chocolatey Dir
 $global:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
+# Start Menu
 $global:StartMenuXML = @"
 <LayoutModIficationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModIfication">
 <LayoutOptions StartTileGroupCellWidth="6" /> <DefaultLayoutOverride> <StartLayoutCollection> <defaultlayout:StartLayout GroupCellWidth="6" /> 
