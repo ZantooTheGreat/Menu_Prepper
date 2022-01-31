@@ -4,9 +4,8 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
     Exit} 
 # Variables:
-# Designated Chocolatey Dir
-$global:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
 # Start Menu
+$global:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
 $global:StartMenuXML = @"
 <LayoutModIficationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModIfication">
 <LayoutOptions StartTileGroupCellWidth="6" /> <DefaultLayoutOverride> <StartLayoutCollection> <defaultlayout:StartLayout GroupCellWidth="6" /> 
@@ -457,8 +456,20 @@ Stop-Transcript
     
     # Setup Additional Drives
         # Change CDROM to E:
+            # $DVDDrive: Get-CIMInstance where description = DVD
+            # $DVDName: "DiscDrive"
+            # $DVDLetter: "E"
+            # Set-CIMInstance -property Label "DVD"
+            # Set-CIMInstance -property DriveLetter
         # Rename 60GB Drive as "OS"
+            # $BootPath: Get-CIMInstance where description = boot drive
+            # $BootName: Boot drive name
+            # $BootLetter: "C"
+            # Set-CIMInstance -property Label "OS"
+            # Set-CIMInstance -property DriveLetter
+            
         # Create simple volume w/ remaining unallocated partition
+
         # Assign letters (D)ata,(H)yperV data,(F)ServerBackup,(G)WkstnBackup - Where Applicable
     
     # Setup New Users
@@ -504,12 +515,6 @@ Stop-Transcript
         # Select NIC Host-Team1
         # Disable IPv6
         # Set IP X.X.X.50 (Host is always .50)
-        
-
-    
-    
-
-
 
     # Server Type
         # 1. Stand Alone
