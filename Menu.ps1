@@ -1,4 +1,18 @@
-Start-Transcript C:\onsys\PrepOutput.txt
+#############################################
+#                                           #
+#                                           #
+# IF YOU WANT TO MAKE CHANGES TO THIS FILE  #
+# PLEASE MAKE A COPY AND EDIT THAT          #
+# DONT MAKE CHANGES TO THE ORIGINAL WITHOUT #
+# MANAGEMENT CONSENT.                       #
+#                                           #
+#                                           #
+#############################################
+#Start-Transcript C:\onsys\PrepOutput.txt
+
+# Disable Audit mode in pre-prep
+# Setup Unattend XML file for Audit Mode
+# Install Print Management Console in pre-prep
 
 If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
     {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
@@ -6,49 +20,50 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Variables:
 # Start Menu
 $global:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
+<# Start Menu Layout #>
 $global:StartMenuXML = @"
-<LayoutModIficationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModIfication">
-<LayoutOptions StartTileGroupCellWidth="6" /> <DefaultLayoutOverride> <StartLayoutCollection> <defaultlayout:StartLayout GroupCellWidth="6" /> 
-</StartLayoutCollection> </DefaultLayoutOverride> </LayoutModIficationTemplate>
+<LayoutModIficationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartMenuXML" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModIfication">
+<LayoutOptions StartTileGroupCellWidth="6" /> <DefaultLayoutOverride> <StartMenuXMLCollection> <defaultlayout:StartMenuXML GroupCellWidth="6" /> 
+</StartMenuXMLCollection> </DefaultLayoutOverride> </LayoutModIficationTemplate>
 "@
-# Default Apps
+<# Default Apps #>
 $global:DefaultAppsXML = @"
 <?xml version="1.0" encoding="UTF-8"?> <DefaultAssociations>
-  <Association Identifier=".3mf" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".arw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".bmp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".cr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".crw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".dib" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".epub" ProgId="AppXvepbp3z66accmsd0x877zbbxjctkpr6t" ApplicationName="Microsoft Edge" /> <Association Identifier=".erf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".fbx" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".glb" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gltf" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" />
-  <Association Identifier=".htm" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier=".html" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
-  <Association Identifier=".jfif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpe" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".jpeg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".jxr" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".kdc" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".MP2" ProgId="WMP11.AssocFile.MP3" ApplicationName="Windows Media Player" /> <Association Identifier=".mrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".nef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".nrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".obj" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".orf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".pdf" ProgId="AcroExch.Document.DC" ApplicationName="Adobe Acrobat Reader DC" /> <Association Identifier=".pef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".ply" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".png" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".raf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".raw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".rw2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".rwl" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".sr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".srw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".stl" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".tif" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" />
-  <Association Identifier=".tiff" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" /> <Association Identifier=".txt" ProgId="txtfile" ApplicationName="Notepad" />
-  <Association Identifier=".url" ProgId="IE.AssocFile.URL" ApplicationName="Internet Browser" /> <Association Identifier=".wdp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-  <Association Identifier=".website" ProgId="IE.AssocFile.WEBSITE" ApplicationName="Internet Explorer" /> <Association Identifier="bingmaps" ProgId="AppXp9gkwccvk6fa6yyfq3tmsk8ws2nprk1p" ApplicationName="Maps" />
-  <Association Identifier="http" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier="https" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
-  <Association Identifier="mailto" ProgId="Outlook.URL.mailto.15" ApplicationName="Outlook" />
-  </DefaultAssociations>
+<Association Identifier=".3mf" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".arw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".bmp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".cr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".crw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".dib" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".epub" ProgId="AppXvepbp3z66accmsd0x877zbbxjctkpr6t" ApplicationName="Microsoft Edge" /> <Association Identifier=".erf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".fbx" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".glb" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gltf" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" />
+<Association Identifier=".htm" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier=".html" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
+<Association Identifier=".jfif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpe" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".jpeg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".jxr" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".kdc" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".MP2" ProgId="WMP11.AssocFile.MP3" ApplicationName="Windows Media Player" /> <Association Identifier=".mrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".nef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".nrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".obj" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".orf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".pdf" ProgId="AcroExch.Document.DC" ApplicationName="Adobe Acrobat Reader DC" /> <Association Identifier=".pef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".ply" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".png" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".raf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".raw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".rw2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".rwl" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".sr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".srw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".stl" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".tif" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" />
+<Association Identifier=".tiff" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" /> <Association Identifier=".txt" ProgId="txtfile" ApplicationName="Notepad" />
+<Association Identifier=".url" ProgId="IE.AssocFile.URL" ApplicationName="Internet Browser" /> <Association Identifier=".wdp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
+<Association Identifier=".website" ProgId="IE.AssocFile.WEBSITE" ApplicationName="Internet Explorer" /> <Association Identifier="bingmaps" ProgId="AppXp9gkwccvk6fa6yyfq3tmsk8ws2nprk1p" ApplicationName="Maps" />
+<Association Identifier="http" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier="https" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
+<Association Identifier="mailto" ProgId="Outlook.URL.mailto.15" ApplicationName="Outlook" />
+</DefaultAssociations>
 "@
-# 
-$global:removeXML = @"
+<# Auto-Accept 365 Licensing #>
+$global:RemoveXML = @"
 <Configuration>
   <Remove All="TRUE"/>
 <Display Level="None" AcceptEULA="TRUE"/>
 </Configuration>
 "@
-# O365 Config Settings
-$global:setupXML = @"
+<# Default O365 Settings #>
+$global:SetupXML = @"
 <Configuration>
   <Add OfficeClientEdition="32">
     <Product ID="O365BusinessRetail">
@@ -58,110 +73,41 @@ $global:setupXML = @"
   </Add>  
 </Configuration>
 "@
-# Menu Options
-Function Show-Menu
-    {param ([string]$Title = 'System Prep')
-    Clear-Host
-    Write-Host "================ $Title ================"
-    Write-Host "                        "
-    Write-Host "(1) Pre-Prep"
-    Write-Host "(2) Workstation Prep"
-    Write-Host "(3) Windows Updates"
-    Write-Host "(4) Adjust power settings"
-    Write-Host "(5) Remove MS Apps"
-    Write-Host "Press Q to Quit."
-    Write-Host "                        "
-<#End of Options#>}
-# Menu Responses
-Do { Show-Menu
-    $selection = Read-Host "Please make a selection"
-    Switch ($selection)
-{'1' 
-{'Pre-Prep selected' <# Create ITAdmin, remove Audit mode, and install Chocolatey #>
-    Write-Host "Prepping system, will require reboot and then select option #2 to complete."
-    # Create onsys directory and hide it from muggles
-        Write-Host "Creating directories..." -ForegroundColor Yellow
-        New-Item -Path "C:\onsys" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep\Choco\" -ItemType Directory
-    # Create XML files for various settings
-        New-Item -Path C:\onsys\Prep\startlayout.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\startlayout.xml $global:StartMenuXML
-        New-Item -Path C:\onsys\Prep\DefaultAssociations.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\DefaultAssocations.xml $global:DefaultAppsXML
-        New-Item -Path C:\onsys\Prep\remove.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\remove.xml $global:removeXML
-        New-Item -Path C:\onsys\Prep\setup.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\setup.xml $global:setupXML
-        attrib +s +h "C:\onsys"
+$global:NoCloseRegedit = @"
+Windows Registry Editor Version 5.00
 
-    # Remove OOBE prompts, and create ITAdmin
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'CmdLine' -Value ''
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'RespecializeCmdLine' -Value ''
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'OOBEInProgress' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupPhase' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupType' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableCursorSuppression' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'ConsentPromptBehaviorAdmin' -Value '0'
-    # Disable UAC
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name EnableLUA -Type DWord -Value 0
-    # Install NuGet
-        Install-PackageProvider -Name NuGet -Force
-        Import-PackageProvider -Name NuGet -Force
-    # Apparently PSWindowsUpdate module comes from the PSGallery and needs to be trusted
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        Install-Module PSWindowsUpdate -Force
-        Import-Module PSWindowsUpdate -Force
-    # Install Windows Updates
-        Write-Verbose "Checking for, and downloading and installing Windows Updates (No Auto Reboot)" -Verbose
-        Get-WindowsUpdate -install -acceptall -IgnoreReboot -IgnoreRebootRequired
-        Write-Host "Installing Windows Updates Complete!" -ForegroundColor Green
-    # Enable updates for other microsoft products
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
-        $ServiceManager.ClientApplicationID = "My App"
-        $ServiceManager.AddService2( "7971f918-a847-4430-9279-4a52d1efe18d",7,"")
-        Write-Verbose "Installing Windows Update Powershell Module" -Verbose
-    # Install Chocolatey
-        Write-Host "Installing Chocolatey"
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        Start-Sleep -Seconds 2
-    # Create ITAdmin w/password 
-        $NewPassword = ConvertTo-SecureString "Cyberdog#1" -AsPlainText -Force
-        New-LocalUser -Name "ITAdmin" -Description "Consys Group Admin account"
-        Set-LocalUser -Name "ITAdmin" -Password $NewPassword
-        Add-LocalGroupMember -Group "Administrators" -Member "ITAdmin"
-        Write-Host "Windows Bloat removed, Audit mode disabled, ITAdmin created. System Rebooting" -ForegroundColor Green
-        Read-Host -Prompt "Done?"
-        Restart-Computer
-<#End of Pre-Prep #>}
-'2' { 'System Prep starting...'
-    <# System Prep tasks required for workstations at Consys #>
-    Start-Transcript C:\onsys\PrepStart.txt
-    If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-        {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-        Exit}
-# Prompt for setup type
-    $global:PrepCheck = Read-Host -Prompt "Prep or Takeover? (1 or 2)"
-# Boolean to proceed with prep or takeover
-        If($global:PrepCheck -eq '1'){
-            $global:ScriptIntelligence = "Prep"
-            Write-Host "Loading prep functions"
-            Write-Host "Prepping system for CG_Prep"
-            Start-Sleep -Seconds 1}
-        ElseIf ($global:PrepCheck -like '2'){
-            $global:ScriptIntelligence = "Takeover"
-            Write-Host "Loading takeover functions" -ForegroundColor Yellow
-            Write-Host "Prepping system for CG_Takeover" -ForegroundColor Yellow
-            Start-Sleep -Seconds 1}
-# Variables
+[HKEY_CLASSES_ROOT\Applications\powershell.exe\shell\open\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit \"& \\\"%1\\\"\""
+
+[HKEY_CLASSES_ROOT\Microsoft.PowerShellScript.1\Shell\0\Command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit \"-Command\" \"if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & \\\"%1\\\"\""
+"@
+<# Variables #>
     $global:ConsysDir = Test-Path -Path "C:\onsys"
     $global:ManufacturerCheck = Get-CimInstance -Class Win32_Computersystem | Select-Object -ExpandProperty Manufacturer
     $global:Temp = Test-Path -Path "C:\Windows\Temp"
     $global:Prefetch = Test-Path -Path "C:\Windows\Prefetch"
     $global:SystemLogs = Test-Path -Path @('C:\Windows\Logs\CBS', 'C:\Windows\Performance\WinSAT','C:\ProgramData\Microsoft\Windows\WER\ReportArchive\AppCrash')
-    #Apps for removal:
+<# Domain join variables #>
+<# These will be setup as prompts #>
+    $global:DomainName
+    $global:AdminUN
+    $global:AdminP
+<# Audit boolean variables #>
+    $global:defaultcheck = Test-Path -Path 'C:\onsys\Prep\DefaultAssociations.xml'
+    $global:removecheck = Test-Path -Path 'C:\onsys\Prep\Remove.xml'
+    $global:setupcheck = Test-Path -Path 'C:\onsys\Prep\Setup.xml'
+    $global:StartMenuCheck = Test-Path -Path 'C:\onsys\Prep\startlayout.xml'
+    $global:TestCGPath = Test-Path -Path "C:\onsys"
+    $global:AgentCheck = Get-Service | Where-Object {$_.Name -eq 'Advanced Monitoring Agent'} | Select-Object -ExpandProperty Status
+    $global:OOBEInprogress = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name "OOBEInProgress" | Select-Object -ExpandProperty OOBEInProgress
+    $global:CmdLine = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'CmdLine' | Select-Object -ExpandProperty CmdLine
+    $global:RespecializedCmdLine = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'RespecializeCmdLine' | Select-Object -ExpandProperty RespecializeCmdLine
+    $global:SetupPhase = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupPhase' | Select-Object -ExpandProperty SetupPhase
+    $global:SetupType = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupType' | Select-Object -ExpandProperty SetupType
+    $global:CursorSuppression = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableCursorSuppression' | Select-Object -ExpandProperty EnableCursorSuppression
+    $global:ConsentPrompt = Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'ConsentPromptBehaviorAdmin' | Select-Object -ExpandProperty ConsentPromptBehaviorAdmin
+<# Apps for removal: #>
     $global:BingWeather = Get-AppXPackage -Name *Microsoft.BingWeather*
     $global:GetHelp = Get-AppXPackage -Name *Microsoft.GetHelp*
     $global:Getstarted = Get-AppXPackage -Name *Microsoft.Getstarte*
@@ -184,7 +130,139 @@ Do { Show-Menu
     $global:YourPhone = Get-AppXPackage -Name *Microsoft.YourPhone*
     $global:ZuneMusic = Get-AppXPackage -Name *Microsoft.ZuneMusi*
     $global:ZuneVideo = Get-AppXPackage -Name *Microsoft.ZuneVideo*
+<# Menu #>
+Function Show-Menu
+    {param ([string]$Title = 'System Prep')
+    Clear-Host
+    Write-Host "================ $Title ================"
+    Write-Host "                        "
+    Write-Host "(1) Pre-Prep"
+    Write-Host "(2) Workstation Prep"
+    Write-Host "(3) Server Prep"
+    Write-Host "(4) Adjust power settings"
+    Write-Host "(5) System Info"
+    Write-Host "(6) Checklist Audit"
+    Write-Host "Press Q to Quit."
+    Write-Host "                        "
+<#End of Options#>}
+# Menu Responses
+Do {Show-Menu
+    $selection = Read-Host "Please make a selection"
+    Switch ($selection)
+{'1' 
+{'Pre-Prep selected' <# Create Owner, remove Audit mode, and install Chocolatey, NuGet, and PSWindowsUpdate #>
+    Write-Host "Prepping system, will require reboot and then select option #2 to complete."
+    # Enable Search Indexing
+        #sc config “wsearch” start=delayed-auto
+    # Create onsys directory and hide it from muggles
+        Write-Host "Creating directories..." -ForegroundColor Yellow
+        New-Item -Path "C:\onsys" -ItemType Directory
+        New-Item -Path "C:\onsys\Prep" -ItemType Directory
+        New-Item -Path "C:\onsys\Prep\Choco\" -ItemType Directory
+    # Create .reg edit file so PS doesn't close after a script runs or fails, and run it.
+        New-Item -Path C:\onsys\Prep\PSNoclose.reg -ItemType File
+        Add-Content -Path C:\onsys\Prep\PSNoclose.reg $global:NoCloseRegedit
+        Start-Sleep 1
+    # Run Regedit file
+        Invoke-Item -Path C:\onsys\Prep\PSNoclose.reg
+        $wshell = New-Object -ComObject wscript.shell;
+        Start-Sleep 1
+        $wshell.SendKeys('Enter')
+    # Create XML files for various settings
+        New-Item -Path C:\onsys\Prep\startlayout.xml -ItemType File
+        Add-Content -Path C:\onsys\Prep\startlayout.xml $global:StartMenuXML
+        New-Item -Path C:\onsys\Prep\DefaultAssociations.xml -ItemType File
+        Add-Content -Path C:\onsys\Prep\DefaultAssociations.xml $global:DefaultAppsXML
+        New-Item -Path C:\onsys\Prep\Remove.xml -ItemType File
+        Add-Content -Path C:\onsys\Prep\Remove.xml $global:RemoveXML
+        New-Item -Path C:\onsys\Prep\Setup.xml -ItemType File
+        Add-Content -Path C:\onsys\Prep\Setup.xml $global:SetupXML
+        attrib +s +h "C:\onsys"
+    # Remove OOBE prompts, and elevation prompts
+        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'CmdLine' -Value ''
+        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'RespecializeCmdLine' -Value ''
+        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'OOBEInProgress' -Value '0'
+        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupPhase' -Value '0'
+        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupType' -Value '0'
+        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableCursorSuppression' -Value '0'
+        Set-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'ConsentPromptBehaviorAdmin' -Value '0'
+        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableLUA' -Type DWord -Value '0'
+    # Install NuGet
+        Install-PackageProvider -Name NuGet -Force
+        Import-PackageProvider -Name NuGet -Force
+    # Apparently PSWindowsUpdate module comes from the PSGallery and needs to be trusted
+        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+        Install-Module PSWindowsUpdate -Force
+        Import-Module PSWindowsUpdate -Force
+    # Install Windows Updates
+        Write-Verbose "Checking for, and downloading and installing Windows Updates (No Auto Reboot)" -Verbose
+       # Get-WindowsUpdate -install -acceptall -IgnoreReboot -IgnoreRebootRequired
+        Get-Windowsupdate -Install -ForceDownload -ForceInstall -AcceptAll
+        Write-Host "Installing Windows Updates Complete!" -ForegroundColor Green
+    # Enable updates for other microsoft products
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
+        $ServiceManager.ClientApplicationID = "My App"
+        $ServiceManager.AddService2( "7971f918-a847-4430-9279-4a52d1efe18d",7,"")
+        Write-Verbose "Installing Windows Update Powershell Module" -Verbose
+    # Disable various default Scheduled Tasks
+        Get-ScheduledTask ScheduledDefrag | Disable-ScheduledTask
 
+    # Hibernate off
+        powercfg -h off
+    # Specifies the new value, in minutes.
+        powercfg /CHANGE monitor-timeout-ac 240
+        powercfg /CHANGE monitor-timeout-dc 10
+        powercfg /CHANGE disk-timeout-ac 0
+        powercfg /CHANGE disk-timeout-dc 0
+        powercfg /Change standby-timeout-ac 0
+        powercfg /Change standby-timeout-dc 20
+    # To disable selective suspend on plugged in laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
+        Powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+        Powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+    # To set power button action on laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
+        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
+        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
+    # To set lid close action on laptops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down):
+        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
+        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
+    # Install Chocolatey
+        Write-Host "Installing Chocolatey"
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Start-Sleep -Seconds 2
+    # TimeZone
+        Set-TimeZone -Name "Eastern Standard Time"
+    # Language Preferences
+        Set-Culture -CultureInfo en-CA
+    # Create Owner w/password
+        <# Change this to "Owner" maybe? #>
+    #   $NewPassword = ConvertTo-SecureString "Cyberdog#1" -AsPlainText -Force
+        New-LocalUser -Name "Owner" -Description "Admin account"
+    #    Set-LocalUser -Name "Owner" -Password "$NewPassword"
+        Add-LocalGroupMember -Group "Administrators" -Member "Owner"
+        Write-Host "Windows updates applied, Audit-mode disabled, Owner created. System Rebooting" -ForegroundColor Yellow
+        Read-Host -Prompt "Done?"
+        Restart-Computer
+<#End of Pre-Prep #>}
+'2' { 'System Prep starting...'
+    <# System Prep tasks required for workstations at Consys #>
+    Start-Transcript C:\onsys\PrepStart.txt
+    If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+        {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+        Exit}
+    # Prompt for setup type
+    $global:PrepCheck = Read-Host -Prompt "Prep or Takeover? (1 or 2)"
+# Boolean to proceed with prep or takeover
+    If($global:PrepCheck -eq '1'){
+        $global:ScriptIntelligence = "Prep"
+        Write-Host "Loading prep functions"
+        Write-Host "Prepping system for CG_Prep"
+        Start-Sleep -Seconds 1}
+    ElseIf ($global:PrepCheck -like '2'){
+        $global:ScriptIntelligence = "Takeover"
+        Write-Host "Loading takeover functions" -ForegroundColor Yellow
+        Write-Host "Prepping system for CG_Takeover" -ForegroundColor Yellow
+        Start-Sleep -Seconds 1}
 # Create onsys directory and hide it from muggles
     If($global:ConsysDir -eq $false){
         Write-Host "Creating directories..." -ForegroundColor Yellow
@@ -201,9 +279,7 @@ Do { Show-Menu
     ElseIf ($AgentRequired -eq "$false"){Write-Host "Agent not detected in Consys Dir, please manually download" -ForegroundColor Red}
     # Else If Agent already installed 
     #>
-
-    <##>
-# FUNCTIONS
+<# FUNCTIONS #>
 function CG_Power(){
     # Hibernate off
         powercfg -h off
@@ -233,7 +309,7 @@ function CG_NetworkUpdates(){
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -name "fDenyTSConnections" -Value 0
     # Disable IPv6 - on all adapters
-    Disable-NetAdapterBinding –InterfaceAlias '*' –ComponentID 'ms_tcpip6'
+        Disable-NetAdapterBinding –InterfaceAlias * –ComponentID ms_tcpip6
         Write-Host "Network settings completed" -ForegroundColor Green
     <# Networking updates #>}
 function CG_UIAdjustments(){
@@ -244,8 +320,6 @@ function CG_UIAdjustments(){
         Set-Culture -CultureInfo en-CA
     # Change Explorer home screen back to "This PC"
         Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Type DWord -Value 1
-    # Domain Users added to Local Admin
-    # Add-LocalGroupMember -Group Administrators -Member "$env:USERDNSDOMAIN\Domain Users"
     # .Net Framework
         Write-Verbose "Install .NET Framework" -Verbose
         Add-WindowsCapability -Online -Name NetFx3~~~~
@@ -256,8 +330,6 @@ function CG_UIAdjustments(){
     # Remove Desktop shortcuts
         Remove-Item -path $env:USERPROFILE\desktop\*.lnk -exclude *Chrome*
         Remove-Item -path c:\users\public\desktop\*.lnk -exclude *Chrome*
-    # Default File associations
-        dism /online /Import-DefaultAppAssociations:"$global:Default_Apps"
     # Dark mode
         Write-Host "Enabling Dark Mode"
         Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
@@ -275,34 +347,34 @@ function CG_WinUpdates(){
     <# Windows updates #>}
 function CG_Menus(){
     # Clear Start-Menu Pins
-    $layoutFile="C:\Windows\StartMenuLayout.xml"
+    $layoutFile="C:\Windows\startlayout.xml"
     # Delete layout file If it already exists
     If(Test-Path $layoutFile)
     {Remove-Item $layoutFile}
     # Creates the blank layout file
     $global:StartMenuXML | Out-File $layoutFile -Encoding ASCII
     $regAliases = @("HKLM", "HKCU")
-    # Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
+    # Assign the start layout and force it to apply with "LockedStartMenuXML" at both the machine and user level
     foreach ($regAlias in $regAliases){
     $basePath = $regAlias + ":\SOFTWARE\Policies\Microsoft\Windows"
     $keyPath = $basePath + "\Explorer" 
     If(!(Test-Path -Path $keyPath)) {New-Item -Path $basePath -Name "Explorer"}
-    Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 1
-    Set-ItemProperty -Path $keyPath -Name "StartLayoutFile" -Value $layoutFile}
+    Set-ItemProperty -Path $keyPath -Name "LockedStartMenuXML" -Value 1
+    Set-ItemProperty -Path $keyPath -Name "StartMenuXMLFile" -Value $layoutFile}
     # Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
     Stop-Process -name explorer
     Start-Sleep -s 2
     $wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys('^{ESCAPE}')
     Start-Sleep -s 2
-    # Enable the ability to pin items again by disabling "LockedStartLayout"
+    # Enable the ability to pin items again by disabling "LockedStartMenuXML"
     foreach ($regAlias in $regAliases){
     $basePath = $regAlias + ":\SOFTWARE\Policies\Microsoft\Windows"
     $keyPath = $basePath + "\Explorer" 
-    Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 0}
+    Set-ItemProperty -Path $keyPath -Name "LockedStartMenuXML" -Value 0}
     # Restart Explorer and delete the layout file
     Stop-Process -name explorer
     # Uncomment the next line to make clean start menu default for all new users
-    Import-StartLayout -LayoutPath $layoutFile -MountPath $env:SystemDrive\
+    Import-StartMenuXML -LayoutPath $layoutFile -MountPath $env:SystemDrive\
     Remove-Item $layoutFile
 
     # Hide Cortana Search
@@ -364,10 +436,6 @@ function CG_Debloat (){
     If($global:Temp -eq $true){
     Write-Host "Removing System level Temp files..." -ForegroundColor Yellow
     Remove-Item -Path C:\Windows\Temp\* -Force -Recurse}
-    If($global:Prefetch -eq $true){
-    Write-Host "Removing System level Prefetch Data..." -ForegroundColor Yellow
-    Remove-Item -Path C:\Windows\Prefetch\*.pf -Force -Recurse
-    <# Pre Fetch#>}
     If($global:SystemLogs -eq $true){
         Write-Host "Removing System level log files..." -ForegroundColor Yellow
         Remove-Item -Path "C:\Windows\Performance\WinSAT\*.log" -Force -Recurse
@@ -382,12 +450,33 @@ function CG_Debloat (){
     If(!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")){
         New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null}
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
+    #Prevents bloatware applications from returning and removes Start Menu suggestions
+    Write-Host "Adding Registry key to prevent bloatware apps from returning"
+    $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+    If (!(Test-Path $registryPath))
+    {New-Item $registryPath}
+    Set-ItemProperty $registryPath DisableWindowsConsumerFeatures -Value 1
+    If (!(Test-Path $registryOEM))
+    {New-Item $registryOEM}
+    Set-ItemProperty $registryOEM ContentDeliveryAllowed -Value 0
+    Set-ItemProperty $registryOEM OemPreInstalledAppsEnabled -Value 0
+    Set-ItemProperty $registryOEM PreInstalledAppsEnabled -Value 0
+    Set-ItemProperty $registryOEM PreInstalledAppsEverEnabled -Value 0
+    Set-ItemProperty $registryOEM SilentInstalledAppsEnabled -Value 0
+    Set-ItemProperty $registryOEM SystemPaneSuggestionsEnabled -Value 0
+    #Disabling the Diagnostics Tracking Service
+    Stop-Service "DiagTrack"
+    Set-Service "DiagTrack" -StartupType Disabled
     # Remove pre-loaded O365
-        Write-Verbose "Removing existing Office365 Installs" -Verbose
-        Start-Process ".\setup.exe" "/configure .\remove.xml" -Wait
+    #   Write-Verbose "Removing existing Office365 Installs" -Verbose
+    #   Start-Process ".\setup.exe" "/configure .\remove.xml" -Wait
     # Remove TEAMS system wide installer
         Start-Process MsiExec.exe -ArgumentList '/X{39AF0813-FA7B-4860-ADBE-93B9B214B914} /qn' -Wait
-        Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait
+        Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait        
+    # Disables Windows Feedback Experience
+        Write-Output "> Disabling Windows Feedback Experience..."
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0
     # Disable Silent Install Store Apps
         Write-Output "> Disabling silent install Store Apps..."
         Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SilentInstalledAppsEnabled -Type DWord -Value 0
@@ -436,12 +525,12 @@ function CG_Takeover(){
     CG_Menus
 <# Remove bloat from previous MSP #>}
 If($global:ScriptIntelligence -eq "Prep"){
-    Write-Host "Powershell Version: $global:PSVersion detected" -ForegroundColor Yellow
-    Write-Host "Adjusting syntax...please wait"
+    Write-Host "Prep selected" -ForegroundColor Yellow
+    Write-Host "Adjusting syntax...please wait" -ForegroundColor Yellow
     CG_Prep}
 ElseIf($global:ScriptIntelligence -eq "Takeover"){
-    Write-Host "Takeover option was selected"
-    Write-Host "Adjusting syntax"
+    Write-Host "Takeover option was selected" -ForegroundColor Yellow
+    Write-Host "Adjusting syntax" -ForegroundColor Yellow
     CG_Takeover}
 $PrepComplete = Read-Host -Prompt "Reset Execution Policy?(Y/N)"
 If($PrepComplete -eq 'Y'){Write-Host "Execution Policy has been reset"
@@ -473,11 +562,11 @@ Stop-Transcript
         # Assign letters (D)ata,(H)yperV data,(F)ServerBackup,(G)WkstnBackup - Where Applicable
     
     # Setup New Users
-        # U: ITAdmin P: Cyberdog#1
+        # U: Owner P: Cyberdog#1
         # U: Speedvault P: Cyberdog#1
         # U: Intronis-wkstn P: Cyberdog#1
     
-    # Global Function Prep 
+    # global Function Prep 
         # Disable UAC
         # Install Chrome
         # Install Adobe
@@ -490,8 +579,19 @@ Stop-Transcript
         # Set Time Zone
         # Activate Windows Server OS
 
+        #Apps to uninstall
+        # $AppUninstall = Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -eq "Consys Managed Backup"}
+        # $AppUninstall.Uninstall()
+
     # Features to install
         # Install Hyper-V 
+        # Get-WindowsOptionalFeature -Online -FeatureName *hyper-v* | select DisplayName, FeatureName
+        # Install the entire Hyper-V stack (hypervisor, services, and tools)
+        # Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All
+        # 
+        # 
+
+
         # Install .Net 3.5 Framework
         # Install ASP.NET 4.6
         # Install SNMP
@@ -523,7 +623,7 @@ Stop-Transcript
         # 4. Terminal Server
 
 
-    <# End of Server Prep#>}
+<# End of Server Prep#>}
 '4' {'Adjusting (Power Settings)'
     # Hibernate off
     powercfg -h off
@@ -545,8 +645,81 @@ Stop-Transcript
         powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
     Write-Host "Completed."
 <# Power configurations #>}
-'5' {'You chose (Reset MS Apps)'}
-'6' {'You chose ()'}
+'5' {'You chose (System Info)'
+Write-Host -BackgroundColor Black
+# Title
+Write-Host "System Information:" -BackgroundColor Black -ForegroundColor DarkYellow
+# New Line
+Write-Host "`n"
+#Info for the table
+# Each word with a $ in front of it is just a "Variable" the runs a command
+$User           = $env:USERNAME
+$ComputerName   = $env:COMPUTERNAME
+$Domain         = $env:USERDOMAIN
+$Winrev         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ReleaseID
+$IpConf         = Get-WmiObject win32_NetworkAdapterConfiguration | Where-Object {$_.IPAddress} | Select-Object -Expand IPAddress | Where-Object {$_ -notlike 'f*'}
+$Model          = Get-WmiObject -Class Win32_Computersystem | Select-Object -ExpandProperty Model
+$Manu           = Get-WmiObject -Class Win32_Computersystem | Select-Object -ExpandProperty Manufacturer
+$Sn             = Get-WmiObject -Class Win32_SystemEnclosure | Select-Object -ExpandProperty SerialNumber
+$ClientMemory   = Get-WmiObject CIM_PhysicalMemory | Measure-Object -Property capacity -Sum | ForEach-Object {[math]::round(($_.sum / 1GB),2)}
+$CPUInfo        = Get-WmiObject -class win32_processor | Select-Object -ExpandProperty Name
+$OSInfo         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
+$DriveUsage     = Get-CimInstance win32_logicaldisk | Where-Object {$_.DeviceID -eq 'C:'} | foreach-object {Write-Output "$($_.caption) $([math]::round(($_.FreeSpace /1gb),2))GB / $([math]::round(($_.size /1gb),2))GB "}
+
+# This is just writing out the contents of each of those variables
+Write-Host "Computer: $ComputerName" -ForegroundColor Green
+Write-Host "User: $User" -ForegroundColor Yellow
+Write-Host "`n"
+Write-Host "IP: "-ForegroundColor Red "$IpConf"
+Write-Host "Domain:"-ForegroundColor Red " $Domain"
+Write-Host "OS:"-ForegroundColor DarkGreen "$OSInfo | $WinRev"
+Write-Host "CPU:" -ForegroundColor DarkGreen "$CPUInfo"
+Write-Host "RAM:" -ForegroundColor DarkGreen "$ClientMemory"
+Write-Host "Boot:"-ForegroundColor DarkGreen "$DriveUsage"
+Write-Host "Serial:"-ForegroundColor DarkGreen "$Sn"
+Write-Host "Model:"-ForegroundColor DarkGreen "$Model"
+Write-Host "Manufacturer:" -ForegroundColor DarkGreen "$Manu"
+<# Display system info on screen #>}
+'6' {'You chose (Checklist Audit)'
+# Booleans for Audits
+<# XML files #>
+    If( $global:defaultcheck -eq $True){Write-Host "DefaultAssociations.xml was created." -ForegroundColor Green}
+        ElseIf($global:defaultcheck -eq $False){Write-Host "DefaultAssociations.xml was not found."-ForegroundColor Red}
+    If($global:removecheck -eq $True){Write-Host "Remove.xml was created."-ForegroundColor Green}
+        ElseIf($global:removecheck -eq $False){Write-Host "Remove.xml was not found."-ForegroundColor Red}
+    If($global:setupcheck -eq $True){Write-Host "setup.xml was created."-ForegroundColor Green}
+        ElseIf($global:setupcheck -eq $False){Write-Host "setup.xml was not found."-ForegroundColor Red}
+    If($global:StartMenuCheck -eq $True){Write-Host "startlayout.xml was created."-ForegroundColor Green}
+        ElseIf($global:StartMenuCheck -eq $False){Write-Host "startlayout.xml was not found."-ForegroundColor Red}
+<# RMM Agent Status #>
+    If($global:AgentCheck -eq 'Running'){Write-Host "Agent is running" -ForegroundColor Green}
+        ElseIf($global:AgentCheck -ne 'Running'){Write-Host "Agent is NOT running" -ForegroundColor Red}
+<# Consys Directory created #>
+    If($TestCGPath -eq $true){Write-Host "Consys directory was sucessfully created"-ForegroundColor Green}
+        ElseIf($TestCGPath -eq $false){Write-Host "Consys directory could not be found" -ForegroundColor Red}
+<# OOBECmdLine is null #>
+    If($global:CmdLine -eq ''){Write-Host "OOBECMDLine is null" -ForegroundColor Green}
+        ElseIf($global:CmdLine -ne ''){Write-Host "OOBECMDline has value, remove it" -ForegroundColor Red}
+<# OOBERespecializedCmdLine #>
+    If($global:RespecializedCmdLine -eq ''){Write-Host "RespecializedCMDLine is null" -ForegroundColor Green}
+        ElseIf($global:RespecializedCmdLine -ne ''){Write-Host "RespecializedCMDline has value, remove it" -ForegroundColor Red}
+<# OOBE items disabled #>
+    If($global:OOBEInprogress -eq '0'){Write-Host "OOBEInProgress is set to 0" -ForegroundColor Green}
+        ElseIf($global:OOBEInprogress -ne '0'){Write-Host "OOBEInProgress isn't configured, please set to 0" -ForegroundColor Red}
+<# OOBE Setup Phase #>
+    If($global:SetupPhase -eq '0'){Write-Host "SetupPhase is set to 0" -ForegroundColor Green}
+        ElseIf($global:SetupPhase -ne '0'){Write-Host "SetupPhase isn't configured, please set to 0" -ForegroundColor Red}
+<# OOBE Setup Type #>
+    If($global:SetupType -eq '0'){Write-Host "SetupType is set to 0" -ForegroundColor Green}
+        ElseIf($global:SetupType -ne '0'){Write-Host "SetupType isn't configured, please set to 0" -ForegroundColor Red}
+<# OOBE Cursor Suppression #>
+    If($global:CursorSuppression -eq '0'){Write-Host "CursorSuppression is set to 0" -ForegroundColor Green}
+        ElseIf($global:CursorSuppression -ne '0'){Write-Host "CursorSuppression isn't configured, please set to 0" -ForegroundColor Red}
+<# OOBE Consent Prompt #>
+    If($global:ConsentPrompt -eq '0'){Write-Host "ConsentPrompt is set to 0" -ForegroundColor Green}
+        ElseIf($global:ConsentPrompt -ne '0'){Write-Host "ConsentPrompt isn't configured, please set to 0" -ForegroundColor Red}
+
+<# Confirm basic Pre-Prep items were completed. #>}
 } pause }
 Until ($selection -eq 'Q')
 #
