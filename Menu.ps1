@@ -8,719 +8,570 @@
 #                                           #
 #                                           #
 #############################################
-#Start-Transcript C:\onsys\PrepOutput.txt
 
-# Disable Audit mode in pre-prep
-# Setup Unattend XML file for Audit Mode
-# Install Print Management Console in pre-prep
+# Rename PC
+function Prep-PC-Name ($PCName){Rename-Computer -NewName "$PCName"}
+# Create User
+function Prep-PC-User ($UserName, $UserPass){
+    Write-Verbose "Creating new local users" -Verbose
+    Start-Sleep -Seconds 10
+    Write-Verbose "Creating User $UserName" -Verbose
+    New-LocalUser -Name "$UserName" -Password $UserPass -PasswordNeverExpires -UserMayNotChangePassword
+    Add-LocalGroupMember -Group "Administrators" -Member "$UserName"
+}
+# PC Prep
+function Prep-PC {
+    # Popup
+    #$shell = new-object -comobject "WScript.Shell"
+    #$choice = $shell.popup("Insert question here",0,"Popup window title",4+32)
 
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-    {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-    Exit} 
-# Variables:
-# Start Menu
-$global:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
-<# Start Menu Layout #>
-$global:StartMenuXML = @"
-<LayoutModIficationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartMenuXML" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModIfication">
-<LayoutOptions StartTileGroupCellWidth="6" /> <DefaultLayoutOverride> <StartMenuXMLCollection> <defaultlayout:StartMenuXML GroupCellWidth="6" /> 
-</StartMenuXMLCollection> </DefaultLayoutOverride> </LayoutModIficationTemplate>
-"@
-<# Default Apps #>
-$global:DefaultAppsXML = @"
-<?xml version="1.0" encoding="UTF-8"?> <DefaultAssociations>
-<Association Identifier=".3mf" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".arw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".bmp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".cr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".crw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".dib" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".epub" ProgId="AppXvepbp3z66accmsd0x877zbbxjctkpr6t" ApplicationName="Microsoft Edge" /> <Association Identifier=".erf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".fbx" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".glb" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".gltf" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" />
-<Association Identifier=".htm" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier=".html" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
-<Association Identifier=".jfif" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpe" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".jpeg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".jpg" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".jxr" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".kdc" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".MP2" ProgId="WMP11.AssocFile.MP3" ApplicationName="Windows Media Player" /> <Association Identifier=".mrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".nef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".nrw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".obj" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".orf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".pdf" ProgId="AcroExch.Document.DC" ApplicationName="Adobe Acrobat Reader DC" /> <Association Identifier=".pef" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".ply" ProgId="AppXmgw6pxxs62rbgfp9petmdyb4fx7rnd4k" ApplicationName="3D Viewer" /> <Association Identifier=".png" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".raf" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".raw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".rw2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".rwl" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".sr2" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" /> <Association Identifier=".srw" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".stl" ProgId="AppXr0rz9yckydawgnrx5df1t9s57ne60yhn" ApplicationName="Print 3D" /> <Association Identifier=".tif" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" />
-<Association Identifier=".tiff" ProgId="PhotoViewer.FileAssoc.Tiff" ApplicationName="Windows Photo Viewer" /> <Association Identifier=".txt" ProgId="txtfile" ApplicationName="Notepad" />
-<Association Identifier=".url" ProgId="IE.AssocFile.URL" ApplicationName="Internet Browser" /> <Association Identifier=".wdp" ProgId="AppX43hnxtbyyps62jhe9sqpdzxn1790zetc" ApplicationName="Photos" />
-<Association Identifier=".website" ProgId="IE.AssocFile.WEBSITE" ApplicationName="Internet Explorer" /> <Association Identifier="bingmaps" ProgId="AppXp9gkwccvk6fa6yyfq3tmsk8ws2nprk1p" ApplicationName="Maps" />
-<Association Identifier="http" ProgId="ChromeHTML" ApplicationName="Google Chrome" /> <Association Identifier="https" ProgId="ChromeHTML" ApplicationName="Google Chrome" />
-<Association Identifier="mailto" ProgId="Outlook.URL.mailto.15" ApplicationName="Outlook" />
-</DefaultAssociations>
-"@
-<# Auto-Accept 365 Licensing #>
-$global:RemoveXML = @"
-<Configuration>
-  <Remove All="TRUE"/>
-<Display Level="None" AcceptEULA="TRUE"/>
-</Configuration>
-"@
-<# Default O365 Settings #>
-$global:SetupXML = @"
-<Configuration>
-  <Add OfficeClientEdition="32">
-    <Product ID="O365BusinessRetail">
-      <Language ID="en-us" />
-      <ExcludeApp ID="Teams" />
-    </Product>
-  </Add>  
-</Configuration>
-"@
-$global:NoCloseRegedit = @"
-Windows Registry Editor Version 5.00
-
-[HKEY_CLASSES_ROOT\Applications\powershell.exe\shell\open\command]
-@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit \"& \\\"%1\\\"\""
-
-[HKEY_CLASSES_ROOT\Microsoft.PowerShellScript.1\Shell\0\Command]
-@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit \"-Command\" \"if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & \\\"%1\\\"\""
-"@
-<# Variables #>
-    $global:ConsysDir = Test-Path -Path "C:\onsys"
-    $global:ManufacturerCheck = Get-CimInstance -Class Win32_Computersystem | Select-Object -ExpandProperty Manufacturer
-    $global:Temp = Test-Path -Path "C:\Windows\Temp"
-    $global:Prefetch = Test-Path -Path "C:\Windows\Prefetch"
-    $global:SystemLogs = Test-Path -Path @('C:\Windows\Logs\CBS', 'C:\Windows\Performance\WinSAT','C:\ProgramData\Microsoft\Windows\WER\ReportArchive\AppCrash')
-<# Domain join variables #>
-<# These will be setup as prompts #>
-    $global:DomainName
-    $global:AdminUN
-    $global:AdminP
-<# Audit boolean variables #>
-    $global:defaultcheck = Test-Path -Path 'C:\onsys\Prep\DefaultAssociations.xml'
-    $global:removecheck = Test-Path -Path 'C:\onsys\Prep\Remove.xml'
-    $global:setupcheck = Test-Path -Path 'C:\onsys\Prep\Setup.xml'
-    $global:StartMenuCheck = Test-Path -Path 'C:\onsys\Prep\startlayout.xml'
-    $global:TestCGPath = Test-Path -Path "C:\onsys"
-    $global:AgentCheck = Get-Service | Where-Object {$_.Name -eq 'Advanced Monitoring Agent'} | Select-Object -ExpandProperty Status
-    $global:OOBEInprogress = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name "OOBEInProgress" | Select-Object -ExpandProperty OOBEInProgress
-    $global:CmdLine = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'CmdLine' | Select-Object -ExpandProperty CmdLine
-    $global:RespecializedCmdLine = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'RespecializeCmdLine' | Select-Object -ExpandProperty RespecializeCmdLine
-    $global:SetupPhase = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupPhase' | Select-Object -ExpandProperty SetupPhase
-    $global:SetupType = Get-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupType' | Select-Object -ExpandProperty SetupType
-    $global:CursorSuppression = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableCursorSuppression' | Select-Object -ExpandProperty EnableCursorSuppression
-    $global:ConsentPrompt = Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'ConsentPromptBehaviorAdmin' | Select-Object -ExpandProperty ConsentPromptBehaviorAdmin
-<# Apps for removal: #>
-    $global:BingWeather = Get-AppXPackage -Name *Microsoft.BingWeather*
-    $global:GetHelp = Get-AppXPackage -Name *Microsoft.GetHelp*
-    $global:Getstarted = Get-AppXPackage -Name *Microsoft.Getstarte*
-    $global:Maps = Get-AppXPackage -Name *Microsoft.WindowsMaps*
-    $global:MixedReality = Get-AppXPackage -Name *Microsoft.MixedReality.Portal*
-    $global:OfficeHub = Get-AppXPackage -Name *Microsoft.MicrosoftOfficeHu*
-    $global:OneConnect = Get-AppXPackage -Name *Microsoft.OneConnect*
-    $global:OneNote = Get-AppXPackage -Name *Microsoft.Office.OneNote*
-    $global:People = Get-AppXPackage -Name *Microsoft.People*
-    $global:SolitaireCollection = Get-AppXPackage -Name *Microsoft.MicrosoftSolitaireCollection*
-    $global:Wallet = Get-AppXPackage -Name *Microsoft.Wallet*
-    $global:WindowsCommunications = Get-AppXPackage -Name *microsoft.windowscommunicationsapp*
-    $global:WindowsFeedback = Get-AppXPackage -Name *Microsoft.WindowsFeedbackHu*
-    $global:Xbox.TCUI = Get-AppXPackage -Name *Microsoft.Xbox.T*
-    $global:XboxApp = Get-AppXPackage -Name *Microsoft.XboxApp*
-    $global:XboxGameOverlay = Get-AppXPackage -Name *Microsoft.XboxGameOverla*
-    $global:XboxGamingOverlay = Get-AppXPackage -Name *Microsoft.XboxGamingOverlay*
-    $global:XboxIdentityProvider = Get-AppXPackage -Name *Microsoft.XboxIdentityProvider*
-    $global:XboxSpeechToTextOverlay = Get-AppXPackage -Name *Microsoft.XboxSpeechToTextOverlay*
-    $global:YourPhone = Get-AppXPackage -Name *Microsoft.YourPhone*
-    $global:ZuneMusic = Get-AppXPackage -Name *Microsoft.ZuneMusi*
-    $global:ZuneVideo = Get-AppXPackage -Name *Microsoft.ZuneVideo*
-<# Menu #>
-Function Show-Menu
-    {param ([string]$Title = 'System Prep')
-    Clear-Host
-    Write-Host "================ $Title ================"
-    Write-Host "                        "
-    Write-Host "(1) Pre-Prep"
-    Write-Host "(2) Workstation Prep"
-    Write-Host "(3) Server Prep"
-    Write-Host "(4) Adjust power settings"
-    Write-Host "(5) System Info"
-    Write-Host "(6) Checklist Audit"
-    Write-Host "Press Q to Quit."
-    Write-Host "                        "
-<#End of Options#>}
-# Menu Responses
-Do {Show-Menu
-    $selection = Read-Host "Please make a selection"
-    Switch ($selection)
-{'1' 
-{'Pre-Prep selected' <# Create Owner, remove Audit mode, and install Chocolatey, NuGet, and PSWindowsUpdate #>
-    Write-Host "Prepping system, will require reboot and then select option #2 to complete."
-    # Enable Search Indexing
-        #sc config “wsearch” start=delayed-auto
     # Create onsys directory and hide it from muggles
-        Write-Host "Creating directories..." -ForegroundColor Yellow
-        New-Item -Path "C:\onsys" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep\Choco\" -ItemType Directory
-    # Create .reg edit file so PS doesn't close after a script runs or fails, and run it.
-        New-Item -Path C:\onsys\Prep\PSNoclose.reg -ItemType File
-        Add-Content -Path C:\onsys\Prep\PSNoclose.reg $global:NoCloseRegedit
-        Start-Sleep 1
-    # Run Regedit file
-        Invoke-Item -Path C:\onsys\Prep\PSNoclose.reg
-        $wshell = New-Object -ComObject wscript.shell;
-        Start-Sleep 1
-        $wshell.SendKeys('Enter')
+    Write-Host "Creating directories..." -ForegroundColor Yellow
+    New-Item -Path "C:\onsys" -ItemType Directory
+    New-Item -Path "C:\onsys\Prep" -ItemType Directory
+    New-Item -Path "C:\onsys\Prep\Choco\" -ItemType Directory
+
     # Create XML files for various settings
-        New-Item -Path C:\onsys\Prep\startlayout.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\startlayout.xml $global:StartMenuXML
-        New-Item -Path C:\onsys\Prep\DefaultAssociations.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\DefaultAssociations.xml $global:DefaultAppsXML
-        New-Item -Path C:\onsys\Prep\Remove.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\Remove.xml $global:RemoveXML
-        New-Item -Path C:\onsys\Prep\Setup.xml -ItemType File
-        Add-Content -Path C:\onsys\Prep\Setup.xml $global:SetupXML
-        attrib +s +h "C:\onsys"
-    # Remove OOBE prompts, and elevation prompts
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'CmdLine' -Value ''
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'RespecializeCmdLine' -Value ''
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'OOBEInProgress' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupPhase' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SYSTEM\Setup' -Name 'SetupType' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableCursorSuppression' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'ConsentPromptBehaviorAdmin' -Value '0'
-        Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'EnableLUA' -Type DWord -Value '0'
-    # Install NuGet
-        Install-PackageProvider -Name NuGet -Force
-        Import-PackageProvider -Name NuGet -Force
-    # Apparently PSWindowsUpdate module comes from the PSGallery and needs to be trusted
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        Install-Module PSWindowsUpdate -Force
-        Import-Module PSWindowsUpdate -Force
-    # Install Windows Updates
-        Write-Verbose "Checking for, and downloading and installing Windows Updates (No Auto Reboot)" -Verbose
-       # Get-WindowsUpdate -install -acceptall -IgnoreReboot -IgnoreRebootRequired
-        Get-Windowsupdate -Install -ForceDownload -ForceInstall -AcceptAll
-        Write-Host "Installing Windows Updates Complete!" -ForegroundColor Green
-    # Enable updates for other microsoft products
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
-        $ServiceManager.ClientApplicationID = "My App"
-        $ServiceManager.AddService2( "7971f918-a847-4430-9279-4a52d1efe18d",7,"")
-        Write-Verbose "Installing Windows Update Powershell Module" -Verbose
-    # Disable various default Scheduled Tasks
-        Get-ScheduledTask ScheduledDefrag | Disable-ScheduledTask
+    New-Item -Path C:\onsys\Prep\startlayout.xml -ItemType File
+    Add-Content -Path C:\onsys\Prep\startlayout.xml $global:startlayout
+    New-Item -Path C:\onsys\Prep\DefaultAssociations.xml -ItemType File
+    Add-Content -Path C:\onsys\Prep\DefaultAssociations.xml $global:DefaultAssociations
+    New-Item -Path C:\onsys\Prep\Remove.xml -ItemType File
+    Add-Content -Path C:\onsys\Prep\Remove.xml $global:RemoveXML
+    New-Item -Path C:\onsys\Prep\Setup.xml -ItemType File
+    Add-Content -Path C:\onsys\Prep\Setup.xml $global:setup
+    attrib +s +h "C:\onsys"
 
-    # Hibernate off
-        powercfg -h off
-    # Specifies the new value, in minutes.
-        powercfg /CHANGE monitor-timeout-ac 240
-        powercfg /CHANGE monitor-timeout-dc 10
-        powercfg /CHANGE disk-timeout-ac 0
-        powercfg /CHANGE disk-timeout-dc 0
-        powercfg /Change standby-timeout-ac 0
-        powercfg /Change standby-timeout-dc 20
-    # To disable selective suspend on plugged in laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        Powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-        Powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-    # To set power button action on laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-    # To set lid close action on laptops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-    # Install Chocolatey
-        Write-Host "Installing Chocolatey"
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        Start-Sleep -Seconds 2
-    # TimeZone
-        Set-TimeZone -Name "Eastern Standard Time"
-    # Language Preferences
-        Set-Culture -CultureInfo en-CA
-    # Create Owner w/password
-        <# Change this to "Owner" maybe? #>
-    #   $NewPassword = ConvertTo-SecureString "Cyberdog#1" -AsPlainText -Force
-        New-LocalUser -Name "Owner" -Description "Admin account"
-    #    Set-LocalUser -Name "Owner" -Password "$NewPassword"
-        Add-LocalGroupMember -Group "Administrators" -Member "Owner"
-        Write-Host "Windows updates applied, Audit-mode disabled, Owner created. System Rebooting" -ForegroundColor Yellow
-        Read-Host -Prompt "Done?"
-        Restart-Computer
-<#End of Pre-Prep #>}
-'2' { 'System Prep starting...'
-    <# System Prep tasks required for workstations at Consys #>
-    Start-Transcript C:\onsys\PrepStart.txt
-    If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-        {Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-        Exit}
-    # Prompt for setup type
-    $global:PrepCheck = Read-Host -Prompt "Prep or Takeover? (1 or 2)"
-# Boolean to proceed with prep or takeover
-    If($global:PrepCheck -eq '1'){
-        $global:ScriptIntelligence = "Prep"
-        Write-Host "Loading prep functions"
-        Write-Host "Prepping system for CG_Prep"
-        Start-Sleep -Seconds 1}
-    ElseIf ($global:PrepCheck -like '2'){
-        $global:ScriptIntelligence = "Takeover"
-        Write-Host "Loading takeover functions" -ForegroundColor Yellow
-        Write-Host "Prepping system for CG_Takeover" -ForegroundColor Yellow
-        Start-Sleep -Seconds 1}
-# Create onsys directory and hide it from muggles
-    If($global:ConsysDir -eq $false){
-        Write-Host "Creating directories..." -ForegroundColor Yellow
-        New-Item -Path "C:\onsys" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep" -ItemType Directory
-        New-Item -Path "C:\onsys\Prep\Choco\" -ItemType Directory
-        $env:ChocolateyInstall = 'C:\onsys\Prep\Choco\'
-        attrib +s +h "C:\onsys"
-    <#C:\onsys#>}
-# Installs Agent as an Admin
-    <# $AgentRequired = Test-Path -Path "C:\onsys\Prep"
-    If($AgentRequired -eq "$true"){Start-Process "C:\onsys\AGENT_*" -Verb RunAs
-    Write-Host "Agent Installing..." -ForegroundColor Red}
-    ElseIf ($AgentRequired -eq "$false"){Write-Host "Agent not detected in Consys Dir, please manually download" -ForegroundColor Red}
-    # Else If Agent already installed 
-    #>
-<# FUNCTIONS #>
-function CG_Power(){
-    # Hibernate off
-        powercfg -h off
-    # SpecIfies the new value, in minutes.
-        powercfg /CHANGE monitor-timeout-ac 240
-        powercfg /CHANGE monitor-timeout-dc 10
-        powercfg /CHANGE disk-timeout-ac 0
-        powercfg /CHANGE disk-timeout-dc 0
-        powercfg /Change standby-timeout-ac 0
-        powercfg /Change standby-timeout-dc 20
-    # To disable selective suspend on plugged in laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        Powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-        Powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-    # To set power button action on laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-    # To set lid close action on laptops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-    <# Power configurations #>}
-function CG_NetworkUpdates(){
+    # Install WinGet
+    # Check if WinGet is installed
+        If (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe){'Winget Already Installed'}
+    # Installing winget from the Microsoft Store
+        Write-Host "Installing Winget... Please Wait"
+        Start-Process "ms-appinstaller:?source=https://aka.ms/getwinget"
+        $nid = (Get-Process AppInstaller).Id
+        Wait-Process -Id $nid
+        Write-Host Winget Installed
+        Write-Host "Winget Installed - Ready for Next Task"
+    Start-Sleep -Seconds 2
+
+    # Disable UAC
+    Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0
+    Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name EnableLUA -Type DWord -Value 0
+    Write-Verbose "Disabled UAC" -Verbose
+
     # Disable Firewall
-        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
-    # Enable PSRemoting
-        Enable-PSRemoting
-    # Enable RDP
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -name "fDenyTSConnections" -Value 0
-    # Disable IPv6 - on all adapters
-        Disable-NetAdapterBinding –InterfaceAlias * –ComponentID ms_tcpip6
-        Write-Host "Network settings completed" -ForegroundColor Green
-    <# Networking updates #>}
-function CG_UIAdjustments(){
-    $ErrorActionPreference -eq 'silentlycontinue'
-    # TimeZone
-        Set-TimeZone -Name "Eastern Standard Time"
-    # Language Preferences
-        Set-Culture -CultureInfo en-CA
-    # Change Explorer home screen back to "This PC"
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Type DWord -Value 1
-    # .Net Framework
-        Write-Verbose "Install .NET Framework" -Verbose
-        Add-WindowsCapability -Online -Name NetFx3~~~~
-        Write-Verbose ".NET Framework Install Complete" -Verbose
-        Disable-MMAgent -ApplicationPreLaunch
-    # Disable (Edge) Prelaunch
-        reg add "HKLM\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main" /v AllowPrelaunch /t REG_DWORD /d "0" /f
-    # Remove Desktop shortcuts
-        Remove-Item -path $env:USERPROFILE\desktop\*.lnk -exclude *Chrome*
-        Remove-Item -path c:\users\public\desktop\*.lnk -exclude *Chrome*
-    # Dark mode
-        Write-Host "Enabling Dark Mode"
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
-    # Disabling OneDrive...
-        If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" | Out-Null}
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type DWord -Value 1
-    # Apply default Apps
-        dism /online /Import-DefaultAppAssociations:"C:\onsys\Prep\DefaultAssociations.xml"
-    <# UI Updates #>}
-function CG_WinUpdates(){
-    # Install Windows Updates
-        Write-Verbose "Checking for, and downloading and installing Windows Updates (No Auto Reboot)" -Verbose
-        Get-WindowsUpdate -install -acceptall -IgnoreReboot -IgnoreRebootRequired
-        Write-Host "Installing Windows Updates Complete!" -ForegroundColor Green
-    <# Windows updates #>}
-function CG_Menus(){
-    # Clear Start-Menu Pins
-    $layoutFile="C:\Windows\startlayout.xml"
-    # Delete layout file If it already exists
-    If(Test-Path $layoutFile)
-    {Remove-Item $layoutFile}
-    # Creates the blank layout file
-    $global:StartMenuXML | Out-File $layoutFile -Encoding ASCII
-    $regAliases = @("HKLM", "HKCU")
-    # Assign the start layout and force it to apply with "LockedStartMenuXML" at both the machine and user level
-    foreach ($regAlias in $regAliases){
-    $basePath = $regAlias + ":\SOFTWARE\Policies\Microsoft\Windows"
-    $keyPath = $basePath + "\Explorer" 
-    If(!(Test-Path -Path $keyPath)) {New-Item -Path $basePath -Name "Explorer"}
-    Set-ItemProperty -Path $keyPath -Name "LockedStartMenuXML" -Value 1
-    Set-ItemProperty -Path $keyPath -Name "StartMenuXMLFile" -Value $layoutFile}
-    # Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
-    Stop-Process -name explorer
-    Start-Sleep -s 2
-    $wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys('^{ESCAPE}')
-    Start-Sleep -s 2
-    # Enable the ability to pin items again by disabling "LockedStartMenuXML"
-    foreach ($regAlias in $regAliases){
-    $basePath = $regAlias + ":\SOFTWARE\Policies\Microsoft\Windows"
-    $keyPath = $basePath + "\Explorer" 
-    Set-ItemProperty -Path $keyPath -Name "LockedStartMenuXML" -Value 0}
-    # Restart Explorer and delete the layout file
-    Stop-Process -name explorer
-    # Uncomment the next line to make clean start menu default for all new users
-    Import-StartMenuXML -LayoutPath $layoutFile -MountPath $env:SystemDrive\
-    Remove-Item $layoutFile
+    Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+    Write-Verbose "Disabled Firewall" -Verbose
 
-    # Hide Cortana Search
-    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name SearchboxTaskbarMode -Type DWord -Value 0
-    # Hide Cortana button
-    Set-Itemproperty -Path Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowCortanaButton -Value 0
-    # Start Menu: Disable Bing Search Results
-    Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name BingSearchEnabled -Type DWord -Value 0
-    # Hide TaskView Button
-    Set-ItemProperty -Path Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowTaskViewButton -Type DWord -Value 0
-    # Remove Suggestions from Start Menu
-    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SystemPaneSuggestionsEnabled -Type DWord -Value 0
-    # Remove MeetNow Button
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Value 1
-<# Remove and customize Start Menu & Taskbar #>}
-function CG_Apps (){
-    # Apps to install
-    choco install -y -r microsoft-windows-terminal
-    choco install -y -r adobereader
-    choco install -y -r googlechrome
-    choco install -y -r zoom
-    choco install -y -r zoom-outlook
-    <# Office install disabled while script not in production#>
-    choco install -y -r office365business
-    # Check If Dell is manufacturer, If true then install Command Updates, and then install all updates
-    If($global:ManufacturerCheck -eq "Dell Inc."){Write-Host "Installing Dell Command Update" -ForegroundColor Green
-        choco install -y -r dellcommandupdate
-        Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/scan" -Wait
-        Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/applyUpdates" -Wait
-        Write-Verbose "Dell Command Update installed."}
-    Else{Write-Host "Dell is not the manufacturer, Dell Command Update will not be installed" -ForegroundColor Red}
-<# Apps to install during Prep#>}
-function CG_Debloat (){
-    $ErrorActionPreference -eq 'silentlycontinue'
-    # Remove MSBloat
-        Remove-AppXPackage -Package $global:BingWeather
-        Remove-AppXPackage -Package $global:GetHelp
-        Remove-AppXPackage -Package $global:Getstarted
-        Remove-AppXPackage -Package $global:Maps
-        Remove-AppXPackage -Package $global:MixedReality
-        Remove-AppXPackage -Package $global:OfficeHub
-        #Remove-AppXPackage -Package $global:OneConnect
-        Remove-AppXPackage -Package $global:OneNote
-        Remove-AppXPackage -Package $global:People
-        Remove-AppXPackage -Package $global:SolitaireCollection
-        Remove-AppXPackage -Package $global:Wallet
-        Remove-AppXPackage -Package $global:WindowsCommunications
-        Remove-AppXPackage -Package $global:WindowsFeedback
-        #Remove-AppXPackage -Package $global:Xbox.TCUI
-        #Remove-AppXPackage -Package $global:Xbox.App
-        #Remove-AppXPackage -Package $global:XboxGameOverlay
-        Remove-AppXPackage -Package $global:XboxGamingOverlay
-        Remove-AppXPackage -Package $global:XboxIdentityProvider
-        Remove-AppXPackage -Package $global:XboxSpeechToTextOverlay
-        Remove-AppXPackage -Package $global:YourPhone
-        Remove-AppXPackage -Package $global:ZuneMusic
-        Remove-AppXPackage -Package $global:ZuneVideo 
-    # Delete system level temp files
-    If($global:Temp -eq $true){
-    Write-Host "Removing System level Temp files..." -ForegroundColor Yellow
-    Remove-Item -Path C:\Windows\Temp\* -Force -Recurse}
-    If($global:SystemLogs -eq $true){
-        Write-Host "Removing System level log files..." -ForegroundColor Yellow
-        Remove-Item -Path "C:\Windows\Performance\WinSAT\*.log" -Force -Recurse
-        Remove-Item -Path "C:\ProgramData\Microsoft\Windows\WER\ReportArchive\AppCrash*" -Force -Recurse
-    <#System Level Logs#>}
-    # SSD lIfe improvement
-        fsutil behavior set DisableLastAccess 1
-        fsutil behavior set EncryptPagingFile 0
-    # Disable Defrag
-        schtasks /Change /DISABLE /TN "\Microsoft\Windows\Defrag\ScheduledDefrag"
+    # Enable RDP
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -name "fDenyTSConnections" -Value 0
+    Write-Verbose "RDP Enabled" -Verbose
+
+    # Set Power Plan to High Performance
+    powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    # Set Power Plan to Balanced
+    #powercfg /s 381b4222-f694-41f0-9685-ff5bb260df2e
+    # To restore the Power saver scheme, execute the command:
+    #powercfg.exe -duplicatescheme a1841308-3541-4fab-bc81-f71556f20b4a
+    # To restore the Balanced scheme, execute the command:
+    #powercfg.exe -duplicatescheme 381b4222-f694-41f0-9685-ff5bb260df2e
+    # To restore the High Performance scheme, execute the command:
+    #powercfg.exe -duplicatescheme 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    # To restore the High Performance scheme, execute the command:
+    #powercfg.exe -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61
+    # hibernate off
+    powercfg -h off
+    # Specifies the new value, in minutes.
+    powercfg /CHANGE monitor-timeout-ac 240
+    powercfg /CHANGE monitor-timeout-dc 10
+    powercfg /CHANGE disk-timeout-ac 0
+    powercfg /CHANGE disk-timeout-dc 0
+    powercfg /Change standby-timeout-ac 0
+    powercfg /Change standby-timeout-dc 20
+    #powercfg /Change hibernate-timeout-ac 0
+    #powercfg /Change hibernate-timeout-dc 20
+    # To disable selective suspend on plugged in laptops/desktops:
+    Powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+    Powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
+    # To set power button action on laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
+    powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
+    powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
+    # To set lid close action on laptops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down):
+    powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
+    powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
+
+    # Disable IPv6
+    Get-NetAdapter | ForEach-Object {Disable-NetAdapterBinding -InterfaceAlias $_.Name -ComponentID ms_tcpip6}
+    
     # Disable automatic setup of network devices
-    If(!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")){
+    If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")){
         New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null}
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
-    #Prevents bloatware applications from returning and removes Start Menu suggestions
-    Write-Host "Adding Registry key to prevent bloatware apps from returning"
-    $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
-    $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
-    If (!(Test-Path $registryPath))
-    {New-Item $registryPath}
-    Set-ItemProperty $registryPath DisableWindowsConsumerFeatures -Value 1
-    If (!(Test-Path $registryOEM))
-    {New-Item $registryOEM}
-    Set-ItemProperty $registryOEM ContentDeliveryAllowed -Value 0
-    Set-ItemProperty $registryOEM OemPreInstalledAppsEnabled -Value 0
-    Set-ItemProperty $registryOEM PreInstalledAppsEnabled -Value 0
-    Set-ItemProperty $registryOEM PreInstalledAppsEverEnabled -Value 0
-    Set-ItemProperty $registryOEM SilentInstalledAppsEnabled -Value 0
-    Set-ItemProperty $registryOEM SystemPaneSuggestionsEnabled -Value 0
-    #Disabling the Diagnostics Tracking Service
-    Stop-Service "DiagTrack"
-    Set-Service "DiagTrack" -StartupType Disabled
-    # Remove pre-loaded O365
-    #   Write-Verbose "Removing existing Office365 Installs" -Verbose
-    #   Start-Process ".\setup.exe" "/configure .\remove.xml" -Wait
+	    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
+
     # Remove TEAMS system wide installer
         Start-Process MsiExec.exe -ArgumentList '/X{39AF0813-FA7B-4860-ADBE-93B9B214B914} /qn' -Wait
-        Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait        
-    # Disables Windows Feedback Experience
-        Write-Output "> Disabling Windows Feedback Experience..."
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0
+        Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait
+
+    # UnPin most start menu apps
+    (New-Object -Com Shell.Application).
+        NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+        Items() |
+    ForEach-Object{ $_.Verbs() } |
+    Where-Object{$_.Name -match 'Un.*pin from Start'} |
+    ForEach-Object{$_.DoIt()}
+
+    # UnPin all start menu tiles (minus live tiles)
+    (New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items()| 
+    ForEach-Object { ($_).Verbs() | Where-Object{$_.Name.Replace('&', '') -match 'From "Start" UnPin|Unpin from Start'} |
+    ForEach-Object{$_.DoIt()}}
+
+    $StartLayoutPath = Test-Path -Path ".\startlayout.xml"
+    If($StartLayoutPath -eq $true){Import-Startlayout -layoutpath .\startlayout.xml -mountpath $Env:SYSTEMDRIVE\}
+    ElseIf($StartLayoutPath -eq $false){Import-StartLayout -LayoutPath C:\onsys\Prep\startlayout.xml -MountPath $Env:SYSTEMDRIVE}
+}
+function Prep-Laptop {
+
+    # Disable UAC
+    Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0
+    Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name EnableLUA -Type DWord -Value 0
+    Write-Verbose "Disabled UAC" -Verbose
+    # Disable Firewall
+    Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+    Write-Verbose "Disabled Firewall" -Verbose
+    # Enable RDP
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -name "fDenyTSConnections" -Value 0
+    Write-Verbose "RDP Enabled" -Verbose
+    # Disable IPv6
+    Get-NetAdapter | ForEach-Object { Disable-NetAdapterBinding -InterfaceAlias $_.Name -ComponentID ms_tcpip6 }
+    
+    # Disable automatic setup of network devices
+    If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null}
+	    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
+
+    # Remove TEAMS system wide installer
+    Start-Process MsiExec.exe -ArgumentList '/X{39AF0813-FA7B-4860-ADBE-93B9B214B914} /qn' -Wait
+    Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait
+
+    # UnPin most start menu apps
+    (New-Object -Com Shell.Application).
+        NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+        Items() |
+    ForEach-Object{ $_.Verbs() } |
+    Where-Object{$_.Name -match 'Un.*pin from Start'} |
+    ForEach-Object{$_.DoIt()}
+
+    # UnPin all start menu tiles (minus live tiles)
+    (New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items()| ForEach-Object { ($_).Verbs() | ?{$_.Name.Replace('&', '') -match 'From "Start" UnPin|Unpin from Start'} | %{$_.DoIt()}  }
+    # Clear Start Menu for new users
+    import-startlayout -layoutpath .\startlayout.xml -mountpath $Env:SYSTEMDRIVE\
+}
+# User Prep
+function Prep-Users-Localadmin {
+    Add-LocalGroupMember -Group Administrators -Member "$env:USERDNSDOMAIN\Domain Users"
+}
+function Prep-User {
+    # Dell 3060 Preinstalled list:
+    #Get-AppxPackage -allusers king.com.CandyCrushFriends | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers king.com.CandyCrushSaga | Remove-AppxPackage -allusers
+    Get-AppxPackage -allusers Microsoft.Office.Desktop | Remove-AppxPackage -allusers
+    Get-AppxPackage -allusers Microsoft.Office.OneNote | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.SkypeApp | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers 7EE7776C.LinkedInforWindows | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.BingNews | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.BingTranslator | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.BingWeather | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.MixedReality.Portal | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.People | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.XboxApp | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.YourPhone | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.ZuneMusic | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers Microsoft.ZuneVideo | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers NORDCURRENT.COOKINGFEVER | Remove-AppxPackage -allusers
+    #Get-AppxPackage -allusers SpotIfyAB.SpotIfyMusic | Remove-AppxPackage -allusers
+    get-appxpackage -allusers Microsoft.MicrosoftOfficeHub | Remove-AppxPackage -allusers
+    #get-appxpackage -allusers Microsoft.MicrosoftSolitaireCollection | remove-appxpackage -allusers
+    #get-appxpackage -allusers DellInc.DellCommandUpdate | remove-appxpackage -allusers
+    #get-appxpackage -allusers DellInc.DellDigitalDelivery | remove-appxpackage -allusers
+    #get-appxpackage -allusers DellInc.DellSupportAssistforPCs | remove-appxpackage -allusers
+    #get-appxpackage -allusers Dell* | remove-appxpackage -allusers
+    Clear-Host
+    # Start Menu: Disable Bing Search Results
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name BingSearchEnabled -Type DWord -Value 0
+    # Change Explorer home screen back to "This PC"
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name LaunchTo -Type DWord -Value 1
+    #Write-Verbose "Changed windows explorer from Quick Access to This PC" -Verbose
+    # Hide Cortana Search
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name SearchboxTaskbarMode -Type DWord -Value 0
+    # Remove TaskView button from taskbar
+    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowTaskViewButton -Type DWord -Value 0
+    # Remove People button from taskbar
+    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People -Name PeopleBand -Type DWord -Value 0
+    # Remove Suggestions from Start Menu
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SystemPaneSuggestionsEnabled -Type DWord -Value 0
     # Disable Silent Install Store Apps
-        Write-Output "> Disabling silent install Store Apps..."
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SilentInstalledAppsEnabled -Type DWord -Value 0
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SilentInstalledAppsEnabled -Type DWord -Value 0
     # Disable Subscribed Content Apps
-        Write-Output "> Disabling Subscribed Content Apps..."
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SubscribedContent-338388Enabled -Type DWord -Value 0
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager -Name SubscribedContent-338388Enabled -Type DWord -Value 0
+    # Disable Consumer Experiences (NO Longer Available?)
+    #Set-ItemProperty -Path HKLM:\Software\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Type DWord -Value 1
+
+    # Set Time Zone
+    Set-TimeZone -Name "Eastern Standard Time"
+    # Set the locale for the region and language
+    #Get-WinSystemLocale
+    #Set-WinSystemLocale en-CA
+    # Set the locale for the region and language
+    Set-Culture -CultureInfo en-CA
+    # Set the region options to the current locale
+    #Set-WinCultureFromLanguageListOptOut 1
+    # Set the region options to "Match current language settings"
+    #Set-WinCultureFromLanguageListOptOut 0
+
     # Disable Action Center
-        Write-Output "> Disabling Action Center..."
-        If (!(Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer")){
-        New-Item -Path HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer | Out-Null}
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer -Name DisableNotIficationCenter -Type DWord -Value 1
-        Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\PushNotIfications -Name ToastEnabled -Type DWord -Value 0
-    # Hiding OneDrive from FileExplorer
-        Write-Output "> Hiding the onedrive folder in windows explorer..."
-        regedit /s $PSScriptRoot\Regfiles\Hide_Onedrive_Folder.reg
-    # Disable Tips & Tricks
-        Write-Output "> Disabling tips, tricks and suggestions in the startmenu and settings..."
-        regedit /s $PSScriptRoot\Regfiles\Disable_Windows_Suggestions.reg
-    # Disable context menus
-        Write-Output "> Disabling contextmenu entries for: Share, Include in library & Give access..."
-        regedit /s $PSScriptRoot\Regfiles\Disable_Share_from_context_menu.reg
-        regedit /s $PSScriptRoot\Regfiles\Disable_Include_in_library_from_context_menu.reg
-        regedit /s $PSScriptRoot\Regfiles\Disable_Give_access_to_context_menu.reg
-    # Disable Bing search from Start Menu
-        Write-Output "> Disabling bing in Windows search..."
-        regedit /s $PSScriptRoot\Regfiles\Disable_Bing_Searches.reg
-    # Clean DNS
-        Write-Host "Flushing DNS..." -ForegroundColor Yellow
-        Clear-DnsClientCache
-<# Debloat #>}
-function CG_Prep (){
-    CG_Power
-    CG_NetworkUpdates
-    CG_UIAdjustments
-    CG_WinUpdates
-    CG_Debloat
-    CG_Menus
-    CG_Apps
-<#Prep Functions#>}
-function CG_Takeover(){
-    CG_Power
-    CG_NetworkUpdates
-    CG_UIAdjustments
-    CG_WinUpdates
-    CG_Debloat
-    CG_Menus
-<# Remove bloat from previous MSP #>}
-If($global:ScriptIntelligence -eq "Prep"){
-    Write-Host "Prep selected" -ForegroundColor Yellow
-    Write-Host "Adjusting syntax...please wait" -ForegroundColor Yellow
-    CG_Prep}
-ElseIf($global:ScriptIntelligence -eq "Takeover"){
-    Write-Host "Takeover option was selected" -ForegroundColor Yellow
-    Write-Host "Adjusting syntax" -ForegroundColor Yellow
-    CG_Takeover}
-$PrepComplete = Read-Host -Prompt "Reset Execution Policy?(Y/N)"
-If($PrepComplete -eq 'Y'){Write-Host "Execution Policy has been reset"
-    Set-ExecutionPolicy -ExecutionPolicy Restricted -Scope LocalMachine}
-    Else{Write-Host "Policy not reset"}
-Stop-Transcript
-<# End of System Prep#>} 
-'3' {'Server Prep starting...'
-    Write-Host "This will have basic prompts"
-    Write-host "Ones asking about DC, FS, ADDS, DNS, DHCP"
-    Write-Host "At this time I have no baseline for a server config"
-    
-    # Setup Additional Drives
-        # Change CDROM to E:
-            # $DVDDrive: Get-CIMInstance where description = DVD
-            # $DVDName: "DiscDrive"
-            # $DVDLetter: "E"
-            # Set-CIMInstance -property Label "DVD"
-            # Set-CIMInstance -property DriveLetter
-        # Rename 60GB Drive as "OS"
-            # $BootPath: Get-CIMInstance where description = boot drive
-            # $BootName: Boot drive name
-            # $BootLetter: "C"
-            # Set-CIMInstance -property Label "OS"
-            # Set-CIMInstance -property DriveLetter
-            
-        # Create simple volume w/ remaining unallocated partition
+    #Write-Verbose "Disabling Action Center..." -Verbose
+    If (!(Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer")) {
+        New-Item -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" | Out-Null
+    }
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer -Name DisableNotIficationCenter -Type DWord -Value 1
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\PushNotIfications -Name ToastEnabled -Type DWord -Value 0
+    # Control Panel to classic icons
+    If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "ForceClassicControlPanel" -Type DWord -Value 1
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Type DWord -Value 0
+    Write-Verbose "Control Panel Icons Set" -Verbose
+    Write-Verbose "User Prep Complete" -Verbose}
 
-        # Assign letters (D)ata,(H)yperV data,(F)ServerBackup,(G)WkstnBackup - Where Applicable
-    
-    # Setup New Users
-        # U: Owner P: Cyberdog#1
-        # U: Speedvault P: Cyberdog#1
-        # U: Intronis-wkstn P: Cyberdog#1
-    
-    # global Function Prep 
-        # Disable UAC
-        # Install Chrome
-        # Install Adobe
-        # Change Quick Access to My Computer
-        # Change Server-Name (Read Prompt to global variable)
-        # Disable Windows Firewall
-        # Enable RDP
-        # Adjust Windows updates to Manual only
-        # Disable IE Enhanced security
-        # Set Time Zone
-        # Activate Windows Server OS
+# Install .NET Framework
+function Prep-DotNET {
+    Write-Verbose "Install .NET Framework" -Verbose
+    Add-WindowsCapability -Online -Name NetFx3~~~~
+    Clear-Host
+    Write-Verbose ".NET Framework Install Complete" -Verbose
+    Clear-Host
+}
+###############################
+# Application Installs
+###############################
 
-        #Apps to uninstall
-        # $AppUninstall = Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -eq "Consys Managed Backup"}
-        # $AppUninstall.Uninstall()
+# Examples
+#Start-Process msiexec -ArgumentList "/i $PSScriptRoot\whatever.msi /qn"
+#Start-Process -FilePath $(Join-Path -Path $PSScriptRoot -ChildPath "Firefox_Setup_49.0.1.exe") -ArgumentList '-ms' -Wait
+#Start-Process -WorkingDirectory '.\Firefox_Setup_49.0.1.exe -ArgumentList' '-ms' -Wait
+#Start-Process "msiexec.exe" -ArgumentList $MSIArguments -Wait -NoNewWindow 
 
-    # Features to install
-        # Install Hyper-V 
-        # Get-WindowsOptionalFeature -Online -FeatureName *hyper-v* | select DisplayName, FeatureName
-        # Install the entire Hyper-V stack (hypervisor, services, and tools)
-        # Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All
-        # 
-        # 
-
-
-        # Install .Net 3.5 Framework
-        # Install ASP.NET 4.6
-        # Install SNMP
-        # Reboot Server
-
-    # Config SNMP
-        # Set Community rights to "READ ONLY"
-        # Set Community name type to Public
-        # Set "Accept SNMP Packets from any host"
-    
-    # Dell Open Manage
-        # Start-Process OMSA_x64.exe (-RunAs)
-
-    # NIC Teaming
-        # New Team
-        # Name: "Host-Team1"
-        # Can take several minutes
-        # Show team status - Prompt to move on
-        # Repeat steps if second team required
-        # Reboot Server 
-        # Select NIC Host-Team1
-        # Disable IPv6
-        # Set IP X.X.X.50 (Host is always .50)
-
-    # Server Type
-        # 1. Stand Alone
-        # 2. Host, DC-VM, Data-VM
-        # 3. Host, DC-VM, Data-VM, Archive-VM
-        # 4. Terminal Server
-
-
-<# End of Server Prep#>}
-'4' {'Adjusting (Power Settings)'
-    # Hibernate off
-    powercfg -h off
-    # SpecIfies the new value, in minutes.
-        powercfg /CHANGE monitor-timeout-ac 240
-        powercfg /CHANGE monitor-timeout-dc 10
-        powercfg /CHANGE disk-timeout-ac 0
-        powercfg /CHANGE disk-timeout-dc 0
-        powercfg /Change standby-timeout-ac 0
-        powercfg /Change standby-timeout-dc 20
-    # To disable selective suspend on plugged in laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        Powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-        Powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0
-    # To set power button action on laptops/desktops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down - 4=Turn off the display):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 7648efa3-dd9c-4e3e-b566-50f929386280 2
-    # To set lid close action on laptops (0=Do nothing - 1=Sleep - 2=Hibernate - 3=Shut down):
-        powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-        powercfg -setdcvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 0
-    Write-Host "Completed."
-<# Power configurations #>}
-'5' {'You chose (System Info)'
-Write-Host -BackgroundColor Black
-# Title
-Write-Host "System Information:" -BackgroundColor Black -ForegroundColor DarkYellow
-# New Line
-Write-Host "`n"
-#Info for the table
-# Each word with a $ in front of it is just a "Variable" the runs a command
-$User           = $env:USERNAME
-$ComputerName   = $env:COMPUTERNAME
-$Domain         = $env:USERDOMAIN
-$Winrev         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ReleaseID
-$IpConf         = Get-WmiObject win32_NetworkAdapterConfiguration | Where-Object {$_.IPAddress} | Select-Object -Expand IPAddress | Where-Object {$_ -notlike 'f*'}
-$Model          = Get-WmiObject -Class Win32_Computersystem | Select-Object -ExpandProperty Model
-$Manu           = Get-WmiObject -Class Win32_Computersystem | Select-Object -ExpandProperty Manufacturer
-$Sn             = Get-WmiObject -Class Win32_SystemEnclosure | Select-Object -ExpandProperty SerialNumber
-$ClientMemory   = Get-WmiObject CIM_PhysicalMemory | Measure-Object -Property capacity -Sum | ForEach-Object {[math]::round(($_.sum / 1GB),2)}
-$CPUInfo        = Get-WmiObject -class win32_processor | Select-Object -ExpandProperty Name
-$OSInfo         = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" | Select-Object -ExpandProperty ProductName
-$DriveUsage     = Get-CimInstance win32_logicaldisk | Where-Object {$_.DeviceID -eq 'C:'} | foreach-object {Write-Output "$($_.caption) $([math]::round(($_.FreeSpace /1gb),2))GB / $([math]::round(($_.size /1gb),2))GB "}
-
-# This is just writing out the contents of each of those variables
-Write-Host "Computer: $ComputerName" -ForegroundColor Green
-Write-Host "User: $User" -ForegroundColor Yellow
-Write-Host "`n"
-Write-Host "IP: "-ForegroundColor Red "$IpConf"
-Write-Host "Domain:"-ForegroundColor Red " $Domain"
-Write-Host "OS:"-ForegroundColor DarkGreen "$OSInfo | $WinRev"
-Write-Host "CPU:" -ForegroundColor DarkGreen "$CPUInfo"
-Write-Host "RAM:" -ForegroundColor DarkGreen "$ClientMemory"
-Write-Host "Boot:"-ForegroundColor DarkGreen "$DriveUsage"
-Write-Host "Serial:"-ForegroundColor DarkGreen "$Sn"
-Write-Host "Model:"-ForegroundColor DarkGreen "$Model"
-Write-Host "Manufacturer:" -ForegroundColor DarkGreen "$Manu"
-<# Display system info on screen #>}
-'6' {'You chose (Checklist Audit)'
-# Booleans for Audits
-<# XML files #>
-    If( $global:defaultcheck -eq $True){Write-Host "DefaultAssociations.xml was created." -ForegroundColor Green}
-        ElseIf($global:defaultcheck -eq $False){Write-Host "DefaultAssociations.xml was not found."-ForegroundColor Red}
-    If($global:removecheck -eq $True){Write-Host "Remove.xml was created."-ForegroundColor Green}
-        ElseIf($global:removecheck -eq $False){Write-Host "Remove.xml was not found."-ForegroundColor Red}
-    If($global:setupcheck -eq $True){Write-Host "setup.xml was created."-ForegroundColor Green}
-        ElseIf($global:setupcheck -eq $False){Write-Host "setup.xml was not found."-ForegroundColor Red}
-    If($global:StartMenuCheck -eq $True){Write-Host "startlayout.xml was created."-ForegroundColor Green}
-        ElseIf($global:StartMenuCheck -eq $False){Write-Host "startlayout.xml was not found."-ForegroundColor Red}
-<# RMM Agent Status #>
-    If($global:AgentCheck -eq 'Running'){Write-Host "Agent is running" -ForegroundColor Green}
-        ElseIf($global:AgentCheck -ne 'Running'){Write-Host "Agent is NOT running" -ForegroundColor Red}
-<# Consys Directory created #>
-    If($TestCGPath -eq $true){Write-Host "Consys directory was sucessfully created"-ForegroundColor Green}
-        ElseIf($TestCGPath -eq $false){Write-Host "Consys directory could not be found" -ForegroundColor Red}
-<# OOBECmdLine is null #>
-    If($global:CmdLine -eq ''){Write-Host "OOBECMDLine is null" -ForegroundColor Green}
-        ElseIf($global:CmdLine -ne ''){Write-Host "OOBECMDline has value, remove it" -ForegroundColor Red}
-<# OOBERespecializedCmdLine #>
-    If($global:RespecializedCmdLine -eq ''){Write-Host "RespecializedCMDLine is null" -ForegroundColor Green}
-        ElseIf($global:RespecializedCmdLine -ne ''){Write-Host "RespecializedCMDline has value, remove it" -ForegroundColor Red}
-<# OOBE items disabled #>
-    If($global:OOBEInprogress -eq '0'){Write-Host "OOBEInProgress is set to 0" -ForegroundColor Green}
-        ElseIf($global:OOBEInprogress -ne '0'){Write-Host "OOBEInProgress isn't configured, please set to 0" -ForegroundColor Red}
-<# OOBE Setup Phase #>
-    If($global:SetupPhase -eq '0'){Write-Host "SetupPhase is set to 0" -ForegroundColor Green}
-        ElseIf($global:SetupPhase -ne '0'){Write-Host "SetupPhase isn't configured, please set to 0" -ForegroundColor Red}
-<# OOBE Setup Type #>
-    If($global:SetupType -eq '0'){Write-Host "SetupType is set to 0" -ForegroundColor Green}
-        ElseIf($global:SetupType -ne '0'){Write-Host "SetupType isn't configured, please set to 0" -ForegroundColor Red}
-<# OOBE Cursor Suppression #>
-    If($global:CursorSuppression -eq '0'){Write-Host "CursorSuppression is set to 0" -ForegroundColor Green}
-        ElseIf($global:CursorSuppression -ne '0'){Write-Host "CursorSuppression isn't configured, please set to 0" -ForegroundColor Red}
-<# OOBE Consent Prompt #>
-    If($global:ConsentPrompt -eq '0'){Write-Host "ConsentPrompt is set to 0" -ForegroundColor Green}
-        ElseIf($global:ConsentPrompt -ne '0'){Write-Host "ConsentPrompt isn't configured, please set to 0" -ForegroundColor Red}
-
-<# Confirm basic Pre-Prep items were completed. #>}
-} pause }
-Until ($selection -eq 'Q')
-#
-Stop-Transcript
+# Install Chrome
+function Prep-Chrome{
+    $ChromeCheck = Test-Path -Path ".\ChromeStandaloneSetup64.exe"
+    If($ChromeCheck -eq $true){Start-Process ".\ChromeStandaloneSetup64.exe" -Wait
+        Write-Verbose "Chrome Installed" -Verbose}
+    ElseIf($ChromeCheck -eq $false) {Write-Verbose "Local installer not found, downloading..." -Verbose
+        winget install -e --id Google.Chrome}
+}
+# Install Adobe Reader
+function Prep-Adobe{
+    $AdobeReaderCheck = Test-Path -Path ".\AcroRdrDC_en_US"
+    If($AdobeReaderCheck -eq $true){Start-Process ".\AcroRdrDC_en_US" "/sPB /rs" -wait
+        Write-Verbose "Adobe Reader Installed" -Verbose}
+    ElseIf($AdobeReaderCheck -eq $false){Write-Verbose "Local installer not found, downloading..." -Verbose
+        winget install -e --id Adobe.Acrobat.Reader.64-bit}
+}
+# Install Dell Command Update
+function Prep-DCU-Install{
+    $DellCommandCheck = Test-Path -Path ".\Dell-Command-Update"     
+    If($DellCommandCheck -eq $true){    Start-Process ".\Dell-Command-Update" "/s" -Wait
+        Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/configure -userConsent=disable -scheduleManual" -Wait
+        Write-Verbose "DCU Installed" -Verbose}
+    ElseIf($DellCommandCheck -eq $true) {Write-Verbose "Local installer not found, downloading..." -Verbose
+        winget install -e --id Dell.CommandUpdate -Wait
+        Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/configure -userConsent=disable -scheduleManual" -Wait}
+}
+# Run Dell Command Update
+Function Prep-DCU-Run{
+    Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/scan" -Wait
+    Start-Process "C:\Program Files\Dell\CommandUpdate\dcu-cli.exe" "/applyUpdates" -Wait
+    Write-Verbose "Updates Installed" -Verbose
+}
+# Install Office365 Business Preload
+function Prep-Office{
+    $OfficeInstaller = Test-path ".\setup.exe"
+    If($OfficeInstaller -eq $true){
+        Write-Verbose "Removing existing Office365 Installs" -Verbose
+        Start-Process ".\setup.exe" "/configure .\remove.xml" -Wait
+        Start-Sleep 30
+        Start-Process ".\setup.exe" "/configure .\setup.xml" -Wait
+        Write-Verbose "Office365 Installed" -Verbose
+        Start-Process MsiExec.exe -ArgumentList '/X{39AF0813-FA7B-4860-ADBE-93B9B214B914} /qn' -Wait
+        Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait
+        Write-Verbose "Office365 TEAMS Removed" -Verbose}
+    ElseIf($OfficeInstaller -eq $false){Write-host "O365 Offline installer not found, attempting download"
+        choco install -y -r office365business}
+}
+# Update Office365 Business Preload
+function Prep-O365-Update{
+    Remove-Item -path .\Office\* -recurse -force
+    sleep 5
+    Start-Process ".\setup.exe" "/download .\setup.xml" -Wait
+    Write-Verbose "Office365 Preload Folder Updated" -Verbose
+}
+# Import file associations
+function Prep-File-Assoc{
+    # dism /online /Import-DefaultAppAssociations:"$PSScriptRoot\DefaultAssociations.xml"
+    $DefaultApps = Test-Path -Path ".\DefaultAssociations.xml"
+    If($DefaultApps -eq $true){dism /online /Import-DefaultAppAssociations:".\DefaultAssociations.xml"}
+    ElseIf($DefaultApps -eq $false){dism /online /Import-DefaultAppAssociations:"C:\onsys\Prep\DefaultAssociations.xml"}
+}
+# Install Intronis and ask for reboot
+function Prep-Intronis{
+    # Start-Process "$PSScriptRoot\ConsysManagedBackup-Setup.exe" "/Silent"
+    Start-Process ".\ConsysManagedBackup-Setup.exe" "/Silent"
+    sleep 120
+    Write-Verbose "Intronis Installed" -Verbose
+    # Install Intronis and auto reboot
+    #Start-Process ".\ConsysManagedBackup-Setup.exe" "/Silent /SuppressMsgBoxes" -wait
+    #Write-Verbose "Intronis Installed" -Verbose
+}
+# Delete desktop shortcuts (minus Google Chrome)
+function Prep-Clean-Shortcuts {
+    Remove-Item -path $env:USERPROFILE\desktop\*.lnk -exclude *Chrome*
+    Remove-Item -path c:\users\public\desktop\*.lnk -exclude *Chrome*
+}
+# Windows Updates
+function Prep-WU {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    # Enable updates for other microsoft products
+    $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
+    $ServiceManager.ClientApplicationID = "My App"
+    $ServiceManager.AddService2( "7971f918-a847-4430-9279-4a52d1efe18d",7,"")
+    Write-Verbose "Installing Windows Update Powershell Module" -Verbose
+    # Install NuGet
+    Install-PackageProvider NuGet -Force
+    Import-PackageProvider NuGet -Force
+    # Apparently PSWindowsUpdate module comes from the PSGallery and needs to be trusted
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+    # Now actually do the update and reboot If necessary
+    Install-Module PSWindowsUpdate
+    Set-ExecutionPolicy RemoteSigned -force
+    Import-Module PSWindowsUpdate
+    #Get-Command -module PSWindowsUpdate
+    #Add-WUServiceManager -ServiceID 7971f918-a847-4430-9279-4a52d1efe18d -Confirm:$false
+    #Get-WUInstall -MicrosoftUpdate -AcceptAll -AutoReboot
+    Write-Verbose "Checking for, downloading and installing Windows Updates (No Auto Reboot)" -Verbose
+    Get-WindowsUpdate -install -acceptall -IgnoreReboot -IgnoreRebootRequired #-autoreboot
+    #Write-Verbose "Installing Windows Updates" -Verbose
+    #Install-WindowsUpdate
+    Write-Verbose "Installing Windows Updates Complete!" -Verbose
+}
+# Copy Files
+function Prep-Copy {
+    New-Item -Path "C:\Temp\" -ItemType Directory
+    Write-Verbose "Copy of Workstation Prep files to c:\temp" -Verbose
+    Copy-Item -Force -Path .\..\Workstation_Prep -Destination c:\temp\ -Recurse
+    # Copy-Item -Force -Path $PSScriptRoot\..\Workstations_Prep -Destination c:\temp\ -Recurse
+    # Copy-Item -Force -Path '$PSScriptRoot\..\Menu - Shortcut.lnk' -Destination c:\temp\
+    # Copy-Item -Force -Path '$PSScriptRoot\..\Menu - C Drive Shortcut.lnk' -Destination c:\temp\
+    # Copy-Item -Force -Path '.\..\Menu - C Drive Shortcut.lnk' -Destination c:\temp\
+}
+function Prep-BGInfo {
+    #New-Item -Path "C:\BGInfo\" -ItemType Directory
+    Copy-Item -Force -Path .\..\Workstation_Prep\BGInfo -Destination c:\ -Recurse
+    #Copy-Item .\..\Workstation_Prep\BGInfo\bginfo64.exe -Destination "C:\BGInfo\"
+    #Copy-Item .\..\Workstation_Prep\BGInfo\HostName.bgi -Destination "C:\BGInfo\"
+    Copy-Item c:\BGInfo\BGInfo.lnk -Destination "C:\programdata\Microsoft\Windows\Start Menu\Programs\StartUp"
+}
+Function Prep-MAV-Preload {
+    New-Item -Path "C:\ProgramData\ManagedAntivirus" -ItemType directory
+    New-Item -Path "C:\ProgramData\ManagedAntivirus\Downloads" -ItemType directory
+    Copy-Item -Force -Path .\..\Workstation_Prep\AV\*.* -Destination C:\ProgramData\ManagedAntivirus\Downloads -Recurse
+}
+Function Prep-Kill-Defrag {
+    schtasks /Change /DISABLE /TN "\Microsoft\Windows\Defrag\ScheduledDefrag"
+}
+Function Prep-Kill-Office {
+    Write-Verbose "Removing existing Office365 Installs" -Verbose
+    Start-Process ".\setup.exe" "/configure .\remove.xml" -Wait
+    Write-Verbose "Office365 Removed" -Verbose
+    Write-Verbose "Removing TEAMS" -Verbose
+    Start-Process MsiExec.exe -ArgumentList '/X{39AF0813-FA7B-4860-ADBE-93B9B214B914} /qn' -Wait
+    Start-Process MsiExec.exe -ArgumentList '/X{731F6BAA-A986-45A4-8936-7C3AAAAA760B} /qn' -Wait
+    Write-Verbose "Office365 TEAMS Removed" -Verbose
+}
+function Show-Menu {
+    param (
+           [string]$Title = 'Workstation Prep Menu'
+     )
+     Clear-Host
+     Write-Host "================= $Title ================="
+     Write-Host "                                          "
+     Write-Host "[ENTER]: Domain PC Prep (All - No Reboot) "
+     Write-Host "                                          "
+     Write-Host "[1]: Full PC Prep (Optional Selections)   "
+     Write-Host "[2]: User Prep (Ex. Dental)               "
+     Write-Host "[3]: Install Software                     "
+     Write-Host "[4]: Install .NET Framework 3.5           "
+     Write-Host "[5]: Install Windows Updates              "
+     Write-Host "[6]: Install Dell Command Update          "
+     Write-Host "[7]: Run Dell Command Update              "
+     Write-Host "[8]: Update Office 365 Offline Installer  "
+     Write-Host "[9]: Pre-Load Managed AV                  "
+     Write-Host "[10]: Add Domain Users to local admin     "
+     Write-Host "[11]: Add BGInfo (Hostname on desktop)    "
+     Write-Host "[12]: Disable Defrag (For SSDs)           "
+     Write-Host "[13]: Remove All Office Installs          "
+     Write-Host "                                          "
+     Write-Host "[C]: Copy Prep Files to c:\temp\          "
+     Write-Host "[Q]: Press 'Q' to quit.                   "
+     Write-Host "                                          "}
+do { Show-Menu
+    $input = Read-Host "Please make a selection"
+    switch ($input){
+    default {
+        Clear-Host
+        $reply_laptop = Read-Host -Prompt "Is this a laptop?[y/N]"
+        Write-Verbose "Enter New PC Name:" -Verbose
+        $PCName = Read-Host -AsString
+        Prep-PC-Name $PCName
+        #Write-Verbose "Enter New Username:" -Verbose
+        #$UserName = Read-Host -AsString
+        #Write-Verbose "Enter New User Password:" -Verbose
+        #$UserPassPlain = Read-Host -AsString
+        #$UserPass = ConvertTo-SecureString -String $UserPassPlain -AsPlainText -Force
+        #Prep-PC-User $UserName $UserPass
+        Prep-MAV-Preload
+        If ( $reply_laptop -notmatch "[yY]"){Prep-PC}
+        Else{Prep-Laptop}
+        Prep-User
+        Prep-Users-Localadmin
+        Prep-DCU-Install
+        Prep-Chrome
+        Prep-Adobe
+        Prep-Office
+        Prep-File-Assoc
+        Prep-Kill-Defrag                
+        Prep-Intronis
+        #Prep-Clean-Shortcuts
+        Prep-DotNET
+        Prep-DCU-Run
+        Prep-WU
+        #Restart-Computer -Force
+    } '1'<# Full PC Prep #> {
+        Clear-Host
+        $reply_laptop = Read-Host -Prompt "Is this a laptop?[y/N]"
+        $reply_pcrename = Read-Host -Prompt "Re-name PC?[Y/n]"
+        $reply_newuser = Read-Host -Prompt "Create new user?[Y/n]"
+        $reply_pladmin = Read-Host -Prompt "Add domain users to local admin?[Y/n]"
+        $reply_office = Read-Host -Prompt "Install Office?[Y/n]"
+        $reply_adobe = Read-Host -Prompt "Install Adobe?[Y/n]"
+        $reply_chrome = Read-Host -Prompt "Install Chrome?[Y/n]"
+        $reply_intronis = Read-Host -Prompt "Install Intronis?[Y/n]"
+        $reply_Clean = Read-Host -Prompt "Remove all desktop shortcuts minus Chrome?[Y/n]"
+        $reply_Defrag = Read-Host -Prompt "Disable Defrag? (For SSDs only!)[Y/n]"
+        $reply_wupdates = Read-Host -Prompt "Install Windows Updates?[Y/n]"
+        $reply_dcu = Read-Host -Prompt "Install Dell Command Update?[Y/n]"
+        $reply_rundcu = Read-Host -Prompt "Run Dell Command Update?[Y/n]"
+        If ( $reply_pcrename -notmatch "[nN]"){Write-Verbose "Enter New PC Name:" -Verbose
+        $PCName = Read-Host -AsString
+        Prep-PC-Name $PCName}
+        If ( $reply_newuser -notmatch "[nN]"){ 
+            Write-Verbose "Enter New Username:" -Verbose
+            $UserName = Read-Host -AsString
+            Write-Verbose "Enter New User Password:" -Verbose
+            $UserPassPlain = Read-Host -AsString
+            $UserPass = ConvertTo-SecureString -String $UserPassPlain -AsPlainText -Force
+            Prep-PC-User $UserName $UserPass}
+        Prep-MAV-Preload
+        If ( $reply_laptop -notmatch "[yY]"){Prep-PC}
+        Else {Prep-Laptop}
+        Prep-User
+        If ( $reply_pladmin -notmatch "[nN]"){Prep-Users-Localadmin}
+        If ( $reply_dcu -notmatch "[nN]"){Prep-DCU-Install}
+        If ( $reply_chrome -notmatch "[nN]"){Prep-Chrome}
+        If ( $reply_adobe -notmatch "[nN]"){Prep-Adobe}
+        If ( $reply_office -notmatch "[nN]"){Prep-Office}
+        Prep-File-Assoc
+        If ( $reply_intronis -notmatch "[nN]"){Prep-Intronis}
+        If ( $reply_Clean -notmatch "[nN]"){Prep-Clean-Shortcuts}
+        If ( $reply_Defrag -notmatch "[nN]"){Prep-Kill-Defrag}
+        Prep-DotNET
+        If ( $reply_rundcu -notmatch "[nN]"){Prep-DCU-Run}
+        If ( $reply_wupdates -notmatch "[nN]"){Prep-WU}
+        #Restart-Computer -Force
+        Write-Verbose "Installation Complete, please reboot system." -Verbose
+    } '2'<# User Prep #> {
+        Clear-Host
+        $reply_Clean = Read-Host -Prompt "Remove all desktop shortcuts minus Chrome?[Y/n]"
+        Prep-User
+        If ( $reply_Clean -notmatch "[nN]"){Prep-Clean-Shortcuts}
+        logoff
+        Clear-Host
+    } '3'<# Install Software #> {
+        Clear-Host
+        $reply_office = Read-Host -Prompt "Install Office?[Y/n]"
+        $reply_adobe = Read-Host -Prompt "Install Adobe?[Y/n]"
+        $reply_chrome = Read-Host -Prompt "Install Chrome?[Y/n]"
+        $reply_intronis = Read-Host -Prompt "Install Intronis?[Y/n]"
+        $reply_dcu = Read-Host -Prompt "Install Dell Command Update?[Y/n]"
+        If ( $reply_dcu -notmatch "[nN]"){Prep-DCU-Install}
+        If ( $reply_chrome -notmatch "[nN]"){Prep-Chrome}
+        If ( $reply_adobe -notmatch "[nN]"){Prep-Adobe}
+        If ( $reply_office -notmatch "[nN]"){Prep-Office}
+        Prep-File-Assoc
+        If ( $reply_intronis -notmatch "[nN]"){Prep-Intronis}
+        Prep-Clean-Shortcuts
+        Clear-Host
+    } '4'<# Install .NET Framework 3.5 #> {
+        Clear-Host
+        Prep-DotNET
+        Clear-Host
+    } '5'<# Install Windows Updates #> {
+        Clear-Host
+        Prep-WU
+        Clear-Host
+        #Restart-Computer -Force
+    } '6'<# Install Dell Command Update #> {
+        Clear-Host
+        Prep-DCU-Install
+        Clear-Host
+        #Restart-Computer -Force
+    } '7'<# Run Dell Command Update #> {
+        Clear-Host
+        Prep-DCU-Run
+        Clear-Host
+        #Restart-Computer -Force
+    } '8'<# Update Office 365 Offline Installer #> {
+        Clear-Host
+        Prep-O365-Update
+        Clear-Host
+    } '9'<# Pre-Load Managed AV #> {
+        Clear-Host
+        Prep-MAV-Preload
+        Clear-Host
+    } '10'<# Add Domain Users to local admin #> {
+        Clear-Host
+        Prep-Users-Localadmin
+        Clear-Host
+    } '11'<# Add BGInfo (Hostname on desktop) #> {
+        Clear-Host
+        Prep-BGInfo
+        Clear-Host
+    } '12'<# Disable Defrag (For SSDs) #> {
+        Clear-Host
+        Prep-Kill-Defrag                
+        Clear-Host
+    } '13'<# Remove All Office Installs #> {
+        Clear-Host
+        Prep-Kill-Office
+        Clear-Host
+    } 'c' <# Copy Prep Files #> {
+        Clear-Host
+        Prep-Copy
+        Clear-Host
+    } 'q' {
+        return
+}
+}
+pause
+}
+until ($input -eq 'q')
